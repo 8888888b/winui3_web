@@ -1,0 +1,3576 @@
+/*!
+ * WinUI 3 for the Web v1.0.0
+ * Windows 11 / WinUI 3 视觉体系的纯 JavaScript 复刻（Web Components，零依赖）
+ * MIT License · https://github.com/8888888b/winui3_web
+ * 构建产物，请勿直接编辑；源码在 src/js/
+ */
+
+/* ---- core.js ---- */
+/*!
+ * WinUI 3 for the Web — Core
+ * 主题（浅色 / 深色 / 高对比）、强调色色阶、图标、组件基类。
+ */
+(function (global) {
+  "use strict";
+
+  const WinUI = (global.WinUI = global.WinUI || {});
+  WinUI.version = "1.0.0";
+
+  /* ================================================================
+   * 图标集（16x16，线性描边，对齐 Fluent 图标的视觉重量）
+   * ================================================================ */
+  function gear() {
+    let teeth = "";
+    for (let i = 0; i < 8; i++) {
+      teeth += `<rect x="7.05" y="1.5" width="1.9" height="2.6" rx="0.6" transform="rotate(${
+        i * 45
+      } 8 8)"/>`;
+    }
+    return `<circle cx="8" cy="8" r="4.3"/>${teeth}<circle cx="8" cy="8" r="1.5"/>`;
+  }
+
+  function star() {
+    return `<path d="M8 2.1l1.83 3.72 4.1.6-2.97 2.9.7 4.1L8 11.48l-3.66 1.94.7-4.1L2.07 6.42l4.1-.6z" fill="currentColor" stroke="none"/>`;
+  }
+
+  const ICONS = {
+    "chevron-down": '<path d="M3.5 5.75 8 10.25l4.5-4.5"/>',
+    "chevron-up": '<path d="M3.5 10.25 8 5.75l4.5 4.5"/>',
+    "chevron-left": '<path d="M10.25 3.5 5.75 8l4.5 4.5"/>',
+    "chevron-right": '<path d="M5.75 3.5 10.25 8l-4.5 4.5"/>',
+    check: '<path d="M3 8.4 6.2 11.5 13 4.5"/>',
+    close: '<path d="M4 4l8 8M12 4l-8 8"/>',
+    add: '<path d="M8 3.2v9.6M3.2 8h9.6"/>',
+    subtract: '<path d="M3.2 8h9.6"/>',
+    search: '<circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2 13.8 13.8"/>',
+    settings: gear(),
+    home: '<path d="M2.5 7.1 8 2.6l5.5 4.5V13a1 1 0 0 1-1 1h-3v-4h-3v4h-3a1 1 0 0 1-1-1z"/>',
+    folder:
+      '<path d="M2 4.6a1 1 0 0 1 1-1h3.1l1.4 1.7H13a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>',
+    document:
+      '<path d="M4 2.5h4.8L12.5 6v7.5H4z"/><path d="M8.6 2.6V6.2h3.7"/><path d="M6 9h4M6 11h3"/>',
+    mail: '<rect x="2" y="3.6" width="12" height="8.8" rx="1.2"/><path d="m2.6 4.6 5.4 4 5.4-4"/>',
+    calendar:
+      '<rect x="2.2" y="3.4" width="11.6" height="10.2" rx="1.4"/><path d="M2.2 6.6h11.6M5.4 2.2v2.2M10.6 2.2v2.2"/>',
+    person: '<circle cx="8" cy="5.6" r="2.7"/><path d="M2.9 13.6c.6-2.5 2.6-3.9 5.1-3.9s4.5 1.4 5.1 3.9"/>',
+    more: '<circle cx="3.4" cy="8" r="1.05" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.05" fill="currentColor" stroke="none"/><circle cx="12.6" cy="8" r="1.05" fill="currentColor" stroke="none"/>',
+    info: '<circle cx="8" cy="8" r="6"/><path d="M8 7.2v4.2"/><circle cx="8" cy="4.9" r="0.85" fill="currentColor" stroke="none"/>',
+    warning: '<path d="M8 2.4 14.4 13.2H1.6z"/><path d="M8 6.2v3.4"/><circle cx="8" cy="11.5" r="0.8" fill="currentColor" stroke="none"/>',
+    error: '<circle cx="8" cy="8" r="6"/><path d="m5.8 5.8 4.4 4.4M10.2 5.8l-4.4 4.4"/>',
+    success: '<circle cx="8" cy="8" r="6"/><path d="m5 8.2 2.2 2.2 4-4.4"/>',
+    star: star(),
+    heart:
+      '<path d="M8 13.3S2.4 10 2.4 6.2A2.9 2.9 0 0 1 8 5a2.9 2.9 0 0 1 5.6 1.2C13.6 10 8 13.3 8 13.3z"/>',
+    lock: '<rect x="3.4" y="7" width="9.2" height="6.8" rx="1.3"/><path d="M5.6 7V5.4a2.4 2.4 0 0 1 4.8 0V7"/>',
+    eye: '<path d="M1.8 8S4.3 3.9 8 3.9 14.2 8 14.2 8 11.7 12.1 8 12.1 1.8 8 1.8 8z"/><circle cx="8" cy="8" r="2.1"/>',
+    "eye-off":
+      '<path d="M1.8 8S4.3 3.9 8 3.9 14.2 8 14.2 8 11.7 12.1 8 12.1 1.8 8 1.8 8z"/><circle cx="8" cy="8" r="2.1"/><path d="m2.6 13.4 10.8-10.8"/>',
+    globe:
+      '<circle cx="8" cy="8" r="6"/><path d="M2 8h12"/><ellipse cx="8" cy="8" rx="2.6" ry="6"/>',
+    wifi: '<path d="M2.4 6.2a8 8 0 0 1 11.2 0"/><path d="M4.6 8.8a5 5 0 0 1 6.8 0"/><path d="M6.7 11.2a2.1 2.1 0 0 1 2.6 0"/><circle cx="8" cy="13.2" r="0.8" fill="currentColor" stroke="none"/>',
+    volume:
+      '<path d="M3 6.4h2.2L9 3.4v9.2L5.2 9.6H3z"/><path d="M11.2 5.8a3.2 3.2 0 0 1 0 4.4"/><path d="M12.9 4a5.6 5.6 0 0 1 0 8"/>',
+    sun: '<circle cx="8" cy="8" r="3.1"/><path d="M8 1.4v1.8M8 12.8v1.8M1.4 8h1.8M12.8 8h1.8M3.4 3.4l1.3 1.3M11.3 11.3l1.3 1.3M12.6 3.4l-1.3 1.3M4.7 11.3l-1.3 1.3"/>',
+    moon: '<path d="M13.2 9.6A5.8 5.8 0 0 1 6.4 2.8a5.8 5.8 0 1 0 6.8 6.8z"/>',
+    contrast: '<circle cx="8" cy="8" r="6"/><path d="M8 2v12a6 6 0 0 0 0-12z" fill="currentColor" stroke="none"/>',
+    play: '<path d="M5 3.4 12.4 8 5 12.6z" fill="currentColor" stroke="none"/>',
+    pause: '<rect x="4.4" y="3.4" width="2.6" height="9.2" rx="0.7" fill="currentColor" stroke="none"/><rect x="9" y="3.4" width="2.6" height="9.2" rx="0.7" fill="currentColor" stroke="none"/>',
+    download: '<path d="M8 2.6v7.2"/><path d="M4.8 6.8 8 10l3.2-3.2"/><path d="M2.8 12.6h10.4"/>',
+    upload: '<path d="M8 10.2V3"/><path d="M4.8 6 8 2.8 11.2 6"/><path d="M2.8 12.6h10.4"/>',
+    save: '<path d="M3 2.8h7.2L13 5.6v7.6H3z"/><path d="M5.4 2.8v3.6h5.2V2.8"/><rect x="5.2" y="9" width="5.6" height="4.2"/>',
+    delete:
+      '<path d="M3 4.6h10"/><path d="M5.6 4.6V3.2h4.8v1.4"/><path d="M4.4 4.6 5 13h6l.6-8.4"/><path d="M6.8 7v3.4M9.2 7v3.4"/>',
+    edit: '<path d="M11.2 2.4 13.6 4.8 6 12.4H3.6v-2.4z"/><path d="m10 3.6 2.4 2.4"/>',
+    copy: '<rect x="5.4" y="5.4" width="8.2" height="8.2" rx="1.2"/><path d="M10.6 5.4V3.6a1.2 1.2 0 0 0-1.2-1.2H3.6a1.2 1.2 0 0 0-1.2 1.2v5.8a1.2 1.2 0 0 0 1.2 1.2h1.8"/>',
+    share:
+      '<circle cx="12.2" cy="3.8" r="1.9"/><circle cx="3.8" cy="8" r="1.9"/><circle cx="12.2" cy="12.2" r="1.9"/><path d="m5.5 7.1 4.9-2.4M5.5 8.9l4.9 2.4"/>',
+    filter: '<path d="M2.4 3.6h11.2L9.4 8.4v4.2L6.6 11V8.4z"/>',
+    sort: '<path d="M4.4 3v10M2.2 10.8 4.4 13l2.2-2.2"/><path d="M11.6 13V3M9.4 5.2 11.6 3l2.2 2.2"/>',
+    grid: '<rect x="2.6" y="2.6" width="4.6" height="4.6" rx="1"/><rect x="8.8" y="2.6" width="4.6" height="4.6" rx="1"/><rect x="2.6" y="8.8" width="4.6" height="4.6" rx="1"/><rect x="8.8" y="8.8" width="4.6" height="4.6" rx="1"/>',
+    list: '<path d="M3 4.2h1M6 4.2h7M3 8h1M6 8h7M3 11.8h1M6 11.8h7"/>',
+    refresh:
+      '<path d="M13 8a5 5 0 1 1-1.6-3.7"/><path d="M13.2 2.6v3.2H10"/>',
+    fullscreen:
+      '<path d="M3 6V3h3M10 3h3v3M13 10v3h-3M6 13H3v-3"/>',
+    "zoom-in":
+      '<circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2 13.8 13.8M7 5.2v3.6M5.2 7h3.6"/>',
+    "zoom-out":
+      '<circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2 13.8 13.8M5.2 7h3.6"/>',
+    cart: '<path d="M2 3.2h1.8l1.6 7.2h6.5l1.5-5.4H4.4"/><circle cx="6.4" cy="12.6" r="1"/><circle cx="11.4" cy="12.6" r="1"/>',
+    cloud: '<path d="M4.6 11.6h6.6a2.8 2.8 0 0 0 .3-5.6A4 4 0 0 0 4 6.6a2.6 2.6 0 0 0 .6 5z"/>',
+    code: '<path d="M5.6 5.2 2.4 8l3.2 2.8M10.4 5.2 13.6 8l-3.2 2.8M9.2 3.4 6.8 12.6"/>',
+    palette:
+      '<path d="M8 2.4a5.6 5.6 0 1 0 0 11.2c1 0 1.3-.7 1.3-1.4 0-1.4 1.2-2 2.4-2h.7c.7 0 1.2-.6 1.2-1.4A5.6 5.6 0 0 0 8 2.4z"/><circle cx="5.4" cy="6.4" r="0.9" fill="currentColor" stroke="none"/><circle cx="9.4" cy="5.2" r="0.9" fill="currentColor" stroke="none"/><circle cx="10.8" cy="8.6" r="0.9" fill="currentColor" stroke="none"/>',
+    image:
+      '<rect x="2.4" y="3.2" width="11.2" height="9.6" rx="1.4"/><circle cx="5.6" cy="6.2" r="1.1"/><path d="m3.2 11.4 3.4-3.2 2.2 2 2-1.8 2.4 3"/>',
+    video: '<rect x="2.4" y="4" width="7.4" height="8" rx="1.2"/><path d="m9.8 7 3.8-2v6l-3.8-2z"/>',
+    music: '<circle cx="5.2" cy="11.6" r="1.8"/><circle cx="11.6" cy="10.4" r="1.8"/><path d="M7 11.6V4.6l6.4-1.6v7.4"/>',
+    link: '<path d="M6.4 9.6 9.6 6.4"/><path d="M7.2 4.4 8.6 3a2.8 2.8 0 0 1 4 4l-1.4 1.4"/><path d="M8.8 11.6 7.4 13a2.8 2.8 0 0 1-4-4l1.4-1.4"/>',
+    phone:
+      '<path d="M4.8 2.4h2l1 2.6-1.4 1a7 7 0 0 0 3.6 3.6l1-1.4 2.6 1v2c0 1-.8 1.8-1.8 1.8C7.2 13 3 8.8 3 4.2c0-1 .8-1.8 1.8-1.8z"/>',
+    location:
+      '<path d="M8 13.4s4.4-4.2 4.4-7.2a4.4 4.4 0 1 0-8.8 0C3.6 9.2 8 13.4 8 13.4z"/><circle cx="8" cy="6.2" r="1.6"/>',
+    clock: '<circle cx="8" cy="8" r="6"/><path d="M8 4.4V8l2.6 1.6"/>',
+    flag: '<path d="M3.4 13.6V2.6c3-1.6 5.2 1.4 8.2 0v6.6c-3 1.4-5.2-1.6-8.2 0"/>',
+    bookmark: '<path d="M4.2 2.6h7.6v10.8L8 10.6l-3.8 2.8z"/>',
+    tag: '<path d="M2.6 8.2V3.4a.8.8 0 0 1 .8-.8h4.8l5.2 5.2-5.6 5.6z"/><circle cx="5.6" cy="5.6" r="0.9" fill="currentColor" stroke="none"/>',
+    "arrow-left": '<path d="M13 8H3.4M6.8 4.4 3.2 8l3.6 3.6"/>',
+    "arrow-right": '<path d="M3 8h9.6M9.2 4.4 12.8 8l-3.6 3.6"/>',
+    "arrow-up": '<path d="M8 13V3.4M4.4 6.8 8 3.2l3.6 3.6"/>',
+    "arrow-down": '<path d="M8 3v9.6M4.4 9.2 8 12.8l3.6-3.6"/>',
+    menu: '<path d="M2.6 4.2h10.8M2.6 8h10.8M2.6 11.8h10.8"/>',
+    external:
+      '<path d="M9 3h4v4"/><path d="m12.6 3.4-5.4 5.4"/><path d="M12.4 9v3.6a.9.9 0 0 1-.9.9H3.4a.9.9 0 0 1-.9-.9V4.5a.9.9 0 0 1 .9-.9H7"/>',
+    undo: '<path d="M4 6.4h6a3.4 3.4 0 0 1 0 6.8H7"/><path d="M6.4 3.6 3.6 6.4l2.8 2.8"/>',
+    redo: '<path d="M12 6.4H6a3.4 3.4 0 0 0 0 6.8h3"/><path d="m9.6 3.6 2.8 2.8-2.8 2.8"/>',
+    print:
+      '<path d="M4.4 6V2.8h7.2V6"/><rect x="2.6" y="6" width="10.8" height="4.6" rx="1.2"/><path d="M4.4 9.4h7.2v3.8H4.4z"/>',
+    bug: '<rect x="4.4" y="5.4" width="7.2" height="7.4" rx="3.6"/><path d="M2.6 7.6h2M11.4 7.6h2M2.6 11h2M11.4 11h2M5.6 4 4.2 2.6M10.4 4l1.4-1.4M8 5.4v7.4"/>',
+    rocket:
+      '<path d="M8 2.4c2.2 1.4 3.4 3.6 3.4 6.2L8 11.4 4.6 8.6c0-2.6 1.2-4.8 3.4-6.2z"/><circle cx="8" cy="6.6" r="1.2"/><path d="M5 9.8 3.4 13l2.4-.6M11 9.8l1.6 3.2-2.4-.6"/>',
+    book: '<path d="M3 3.4c1.8-.8 3.4-.8 5 0v9.2c-1.6-.8-3.2-.8-5 0z"/><path d="M13 3.4c-1.8-.8-3.4-.8-5 0v9.2c1.6-.8 3.2-.8 5 0z"/>',
+    layers:
+      '<path d="M8 2.6 13.6 5.6 8 8.6 2.4 5.6z"/><path d="m2.4 8.4 5.6 3 5.6-3"/><path d="m2.4 11.2 5.6 3 5.6-3"/>',
+    database:
+      '<ellipse cx="8" cy="4" rx="5" ry="1.8"/><path d="M3 4v8c0 1 2.2 1.8 5 1.8s5-.8 5-1.8V4"/><path d="M3 8c0 1 2.2 1.8 5 1.8s5-.8 5-1.8"/>',
+    chart: '<path d="M2.6 12.8h10.8"/><rect x="4" y="8" width="2" height="4" rx="0.6"/><rect x="7" y="5.4" width="2" height="6.6" rx="0.6"/><rect x="10" y="7" width="2" height="5" rx="0.6"/>',
+    server:
+      '<rect x="2.6" y="2.8" width="10.8" height="4.2" rx="1"/><rect x="2.6" y="9" width="10.8" height="4.2" rx="1"/><circle cx="5" cy="4.9" r="0.7" fill="currentColor" stroke="none"/><circle cx="5" cy="11.1" r="0.7" fill="currentColor" stroke="none"/>',
+    key: '<circle cx="5.4" cy="8" r="2.4"/><path d="M7.8 8h5.6M11.4 8v2M13.4 8v1.4"/>',
+    shield: '<path d="M8 2.4 13 4.2v3.6c0 3-2.2 4.8-5 5.8-2.8-1-5-2.8-5-5.8V4.2z"/>',
+    speed: '<path d="M13.6 11.2a6 6 0 1 0-11.2 0"/><path d="M8 8.6 10.6 6"/><circle cx="8" cy="9.4" r="1.1"/>',
+    window:
+      '<rect x="2.4" y="3.2" width="11.2" height="9.6" rx="1.4"/><path d="M2.4 6h11.2"/>',
+    minimize: '<path d="M2.6 8h10.8"/>',
+    maximize: '<rect x="2.8" y="2.8" width="10.4" height="10.4" rx="1"/>',
+    restore:
+      '<rect x="2.8" y="5.6" width="7.6" height="7.6" rx="1"/><path d="M5.6 5.6V3.6a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2"/>',
+    sparkle:
+      '<path d="M8 2.4l1.1 3.1 3.1 1.1-3.1 1.1L8 10.8 6.9 7.7 3.8 6.6l3.1-1.1z"/><path d="M12.2 10.4l.5 1.4 1.4.5-1.4.5-.5 1.4-.5-1.4-1.4-.5 1.4-.5z"/>',
+    terminal: '<rect x="2.4" y="3.2" width="11.2" height="9.6" rx="1.2"/><path d="m5 6.4 2 1.8-2 1.8M8.6 10.4h3"/>',
+    users:
+      '<circle cx="6" cy="6" r="2.2"/><path d="M2.4 12.6c.4-2 1.8-3.2 3.6-3.2s3.2 1.2 3.6 3.2"/><path d="M10.4 4.2a2 2 0 0 1 0 3.8M11.4 9.6c1.2.3 2 1.3 2.3 2.8"/>',
+    pin: '<path d="M8 2.4 13 7.4l-2 .4-3 3-.4 2.8-3.4-3.4-3-3 2.8-.4 3-3z"/>',
+  };
+
+  WinUI.icons = ICONS;
+
+  /**
+   * 生成图标标记
+   * @param {string} name 图标名
+   * @param {string} [cls] 额外类名
+   */
+  WinUI.icon = function (name, cls) {
+    const body = ICONS[name] || ICONS.info;
+    return (
+      '<span class="wui-icon' +
+      (cls ? " " + cls : "") +
+      '" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">' +
+      body +
+      "</svg></span>"
+    );
+  };
+
+  /** 将 icon 名称或标记解析为 HTML */
+  WinUI.iconHTML = function (icon) {
+    if (!icon) return "";
+    if (icon.indexOf("<") === 0) return icon;
+    return WinUI.icon(icon);
+  };
+
+  /* ================================================================
+   * 工具函数
+   * ================================================================ */
+  const U = (WinUI.util = {
+    clamp: (v, min, max) => Math.min(max, Math.max(min, v)),
+
+    uid: (() => {
+      let n = 0;
+      return (prefix) => (prefix || "wui") + "-" + ++n;
+    })(),
+
+    /** 创建元素 */
+    el(tag, attrs, html) {
+      const node = document.createElement(tag);
+      if (attrs) {
+        for (const key in attrs) {
+          if (key === "class") node.className = attrs[key];
+          else if (key === "text") node.textContent = attrs[key];
+          else if (attrs[key] != null) node.setAttribute(key, attrs[key]);
+        }
+      }
+      if (html != null) node.innerHTML = html;
+      return node;
+    },
+
+    /** 取出全部子节点（同时从原节点移除），用于「保留内容再重建骨架」 */
+    take(parent) {
+      const nodes = Array.prototype.slice.call(parent.childNodes);
+      while (parent.firstChild) parent.removeChild(parent.firstChild);
+      return nodes;
+    },
+
+    esc(str) {      return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    },
+
+    debounce(fn, wait) {
+      let t;
+      return function () {
+        const args = arguments;
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait || 150);
+      };
+    },
+
+    /** 六位十六进制转 rgb */
+    hexToRgb(hex) {
+      let h = String(hex).replace("#", "").trim();
+      if (h.length === 3)
+        h = h
+          .split("")
+          .map((c) => c + c)
+          .join("");
+      if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+      return {
+        r: parseInt(h.slice(0, 2), 16),
+        g: parseInt(h.slice(2, 4), 16),
+        b: parseInt(h.slice(4, 6), 16),
+      };
+    },
+
+    rgbToHsl(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h = 0;
+      let s = 0;
+      const l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        else if (max === g) h = ((b - r) / d + 2) / 6;
+        else h = ((r - g) / d + 4) / 6;
+      }
+      return { h: h * 360, s: s * 100, l: l * 100 };
+    },
+
+    hslToHex(h, s, l) {
+      h = ((h % 360) + 360) % 360;
+      s = U.clamp(s, 0, 100) / 100;
+      l = U.clamp(l, 0, 100) / 100;
+      const k = (n) => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      const toHex = (x) =>
+        Math.round(x * 255)
+          .toString(16)
+          .padStart(2, "0");
+      return "#" + toHex(f(0)) + toHex(f(8)) + toHex(f(4));
+    },
+
+    /** 相对亮度（用于决定强调色上的文字颜色） */
+    luminance(rgb) {
+      const f = (c) => {
+        c /= 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      };
+      return 0.2126 * f(rgb.r) + 0.7152 * f(rgb.g) + 0.0722 * f(rgb.b);
+    },
+  });
+
+  /* ================================================================
+   * 主题与强调色
+   * ================================================================ */
+  const STORAGE = {
+    theme: "winui.theme",
+    accent: "winui.accent",
+  };
+
+  const themeListeners = new Set();
+  const accentListeners = new Set();
+
+  function read(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function write(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      /* 忽略隐私模式 */
+    }
+  }
+
+  const Theme = (WinUI.theme = {
+    mode: "system",
+    resolved: "light",
+
+    /** 当前系统偏好 */
+    system() {
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    },
+
+    resolve(mode) {
+      if (mode === "system") return Theme.system();
+      if (mode === "high-contrast") return "high-contrast";
+      return mode === "dark" ? "dark" : "light";
+    },
+
+    /**
+     * 设置主题
+     * @param {'light'|'dark'|'system'|'high-contrast'} mode
+     */
+    set(mode, persist) {
+      Theme.mode = mode || "system";
+      const resolved = Theme.resolve(Theme.mode);
+      Theme.resolved = resolved;
+      document.documentElement.setAttribute("data-theme", resolved);
+      document.documentElement.setAttribute("data-theme-mode", Theme.mode);
+      if (persist !== false) write(STORAGE.theme, Theme.mode);
+      Accent.apply();
+      themeListeners.forEach((fn) => fn(resolved, Theme.mode));
+      window.dispatchEvent(
+        new CustomEvent("wuithemechange", { detail: { theme: resolved, mode: Theme.mode } })
+      );
+    },
+
+    toggle() {
+      const next = Theme.resolved === "dark" ? "light" : "dark";
+      Theme.set(next);
+      return next;
+    },
+
+    onChange(fn) {
+      themeListeners.add(fn);
+      return () => themeListeners.delete(fn);
+    },
+
+    init() {
+      const explicit = document.documentElement.getAttribute("data-theme-mode");
+      const saved = read(STORAGE.theme);
+      Theme.set(explicit || saved || "system", false);
+      if (window.matchMedia) {
+        const mq = window.matchMedia("(prefers-color-scheme: dark)");
+        const handler = () => {
+          if (Theme.mode === "system") Theme.set("system", false);
+        };
+        if (mq.addEventListener) mq.addEventListener("change", handler);
+        else if (mq.addListener) mq.addListener(handler);
+      }
+    },
+  });
+
+  const Accent = (WinUI.accent = {
+    /** 用户选定的基色（#RRGGBB） */
+    base: "#0078d4",
+
+    set(hex, persist) {
+      const rgb = U.hexToRgb(hex);
+      if (!rgb) return;
+      Accent.base = "#" + [rgb.r, rgb.g, rgb.b].map((v) => v.toString(16).padStart(2, "0")).join("");
+      if (persist !== false) write(STORAGE.accent, Accent.base);
+      Accent.apply();
+      accentListeners.forEach((fn) => fn(Accent.base));
+      window.dispatchEvent(new CustomEvent("wuiaccentchange", { detail: { accent: Accent.base } }));
+    },
+
+    /** 依据当前主题重新计算色阶并写入 CSS 变量 */
+    apply() {
+      const rgb = U.hexToRgb(Accent.base) || { r: 0, g: 120, b: 212 };
+      const hsl = U.rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const dark = Theme.resolved === "dark" || Theme.resolved === "high-contrast";
+
+      let l = hsl.l;
+      if (dark) l = hsl.l + (100 - hsl.l) * 0.47;
+      else l = hsl.l * 0.86;
+
+      const make = (lightness) => U.hslToHex(hsl.h, hsl.s, U.clamp(lightness, 0, 100));
+      const base = make(l);
+      const hover = make(dark ? l + 5 : l + 6.5);
+      const pressed = make(dark ? l - 8 : l - 5);
+      const tintRgb = U.hexToRgb(base);
+      const tintAlpha = dark ? 0.12 : 0.08;
+
+      const root = document.documentElement.style;
+      root.setProperty("--wui-accent", base);
+      root.setProperty("--wui-accent-hover", hover);
+      root.setProperty("--wui-accent-pressed", pressed);
+      root.setProperty("--wui-accent-text", U.luminance(tintRgb) > 0.5 ? "#000000" : "#ffffff");
+      root.setProperty(
+        "--wui-accent-tint",
+        `rgba(${tintRgb.r}, ${tintRgb.g}, ${tintRgb.b}, ${tintAlpha})`
+      );
+      root.setProperty(
+        "--wui-accent-tint-strong",
+        `rgba(${tintRgb.r}, ${tintRgb.g}, ${tintRgb.b}, ${dark ? 0.22 : 0.16})`
+      );
+      document.documentElement.setAttribute("data-accent-hex", base);
+    },
+
+    onChange(fn) {
+      accentListeners.add(fn);
+      return () => accentListeners.delete(fn);
+    },
+
+    init() {
+      const saved = read(STORAGE.accent);
+      Accent.base = saved || "#0078d4";
+      Accent.apply();
+    },
+
+    /** 常用强调色（Windows 个性化默认色板） */
+    palette: [
+      "#0078d4",
+      "#0099bc",
+      "#00b294",
+      "#10893e",
+      "#498205",
+      "#767676",
+      "#847545",
+      "#c239b3",
+      "#881798",
+      "#b146c2",
+      "#e3008c",
+      "#c42b1c",
+      "#ca5010",
+      "#986f0b",
+      "#004e8c",
+      "#4f6bed",
+    ],
+  });
+
+  WinUI.setTheme = (mode) => Theme.set(mode);
+  WinUI.getTheme = () => ({ mode: Theme.mode, resolved: Theme.resolved });
+  WinUI.setAccent = (hex) => Accent.set(hex);
+  WinUI.getAccent = () => Accent.base;
+
+  /* ================================================================
+   * 组件基类
+   * ================================================================ */
+  class WuiElement extends HTMLElement {
+    constructor() {
+      super();
+      this._built = false;
+      this._silent = false;
+    }
+
+    connectedCallback() {
+      if (!this._built) {
+        this._built = true;
+        this.build();
+      }
+      this._runSync(null);
+    }
+
+    disconnectedCallback() {
+      if (this._cleanup) this._cleanup();
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      if (!this._built || this._silent) return;
+      if (oldValue === newValue) return;
+      this._runSync(name);
+    }
+
+    /**
+     * 带重入锁的同步执行。
+     * 组件 sync() 里经常需要写 aria-* / data-* 属性，若其中任一属性在
+     * observedAttributes 中就会形成「同步 → 改属性 → 再同步」的死循环。
+     * 这里统一加锁，杜绝该类问题。
+     */
+    _runSync(name) {
+      if (this._syncLock) return;
+      this._syncLock = true;
+      try {
+        this.sync(name);
+      } finally {
+        this._syncLock = false;
+      }
+    }
+
+    build() {}
+    sync() {}
+
+    get a() {
+      return {
+        str: (n, d) => (this.hasAttribute(n) ? this.getAttribute(n) : d),
+        bool: (n) => this.hasAttribute(n),
+        num: (n, d) => {
+          const v = parseFloat(this.getAttribute(n));
+          return Number.isNaN(v) ? d : v;
+        },
+      };
+    }
+
+    emit(type, detail) {
+      this.dispatchEvent(new CustomEvent(type, { detail: detail, bubbles: true, composed: true }));
+    }
+
+    /** 不触发 attributeChangedCallback 的属性同步 */
+    setAttr(name, value) {
+      this._silent = true;
+      if (value === false || value == null) this.removeAttribute(name);
+      else this.setAttribute(name, value === true ? "" : value);
+      this._silent = false;
+    }
+  }
+
+  WinUI.WuiElement = WuiElement;
+
+  WinUI.define = function (tag, cls, attrs) {
+    if (customElements.get(tag)) return customElements.get(tag);
+    if (attrs) cls.observedAttributes = attrs;
+    customElements.define(tag, cls);
+    return cls;
+  };
+
+  /* ================================================================
+   * 键盘 / 指针焦点模式
+   * ================================================================ */
+  function initFocusMode() {
+    const root = document.documentElement;
+    root.setAttribute("data-focus-mode", "pointer");
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.key === "Tab" || e.key === "ArrowUp" || e.key === "ArrowDown")
+          root.setAttribute("data-focus-mode", "keyboard");
+      },
+      true
+    );
+    document.addEventListener(
+      "pointerdown",
+      () => root.setAttribute("data-focus-mode", "pointer"),
+      true
+    );
+  }
+
+  /* ================================================================
+   * 初始化
+   * ================================================================ */
+  function init() {
+    initFocusMode();
+    Theme.init();
+    Accent.init();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})(window);
+
+;
+/* ---- popup.js ---- */
+/*!
+ * WinUI 3 for the Web — Popup 基础设施
+ * 统一浮层宿主、定位（含翻转 / 边界收敛）、外部点击关闭。
+ */
+(function (global) {
+  "use strict";
+  const WinUI = global.WinUI;
+
+  let hostEl = null;
+
+  /** 浮层宿主（fixed 覆盖全屏，pointer-events: none，子元素可交互） */
+  WinUI.layerHost = function () {
+    if (!hostEl) {
+      hostEl = document.createElement("div");
+      hostEl.className = "wui-layer-host";
+      document.body.appendChild(hostEl);
+    }
+    return hostEl;
+  };
+
+  /**
+   * 将浮层定位到锚点
+   * @param {HTMLElement} anchor
+   * @param {HTMLElement} panel
+   * @param {{placement?:string,gap?:number,align?:string,viewport?:number}} [opts]
+   */
+  WinUI.position = function (anchor, panel, opts) {
+    opts = opts || {};
+    const gap = opts.gap == null ? 4 : opts.gap;
+    const pad = opts.viewport == null ? 8 : opts.viewport;
+    const rect = anchor.getBoundingClientRect();
+    const pw = panel.offsetWidth;
+    const ph = panel.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const placement = opts.placement || "bottom";
+
+    let left;
+    let top;
+
+    if (placement === "right" || placement === "left") {
+      left = placement === "right" ? rect.right + gap : rect.left - pw - gap;
+      top = rect.top;
+      if (left + pw > vw - pad) left = rect.left - pw - gap;
+      if (left < pad) left = Math.min(rect.right + gap, vw - pw - pad);
+      if (top + ph > vh - pad) top = Math.max(pad, vh - ph - pad);
+      top = Math.max(pad, top);
+    } else {
+      const above = placement === "top";
+      top = above ? rect.top - ph - gap : rect.bottom + gap;
+      if (!above && top + ph > vh - pad) {
+        // 下方放不下 → 翻转到上方
+        const flipped = rect.top - ph - gap;
+        top = flipped >= pad ? flipped : Math.max(pad, vh - ph - pad);
+      } else if (above && top < pad) {
+        top = rect.bottom + gap;
+      }
+
+      const align = opts.align || (placement === "bottom" || placement === "top" ? "start" : "start");
+      if (align === "center") left = rect.left + rect.width / 2 - pw / 2;
+      else if (align === "end") left = rect.right - pw;
+      else left = rect.left;
+
+      if (left + pw > vw - pad) left = vw - pw - pad;
+      if (left < pad) left = pad;
+    }
+
+    panel.style.left = Math.round(left) + "px";
+    panel.style.top = Math.round(top) + "px";
+    return { left: left, top: top };
+  };
+
+  /** 点击浮层外部 / Esc 关闭 */
+  WinUI.dismissable = function (panel, anchor, onClose) {
+    const timer = setTimeout(() => {
+      function onDown(e) {
+        if (panel.contains(e.target)) return;
+        if (anchor && (anchor === e.target || anchor.contains(e.target))) return;
+        close();
+      }
+      function onKey(e) {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          close();
+        }
+      }
+      function close() {
+        document.removeEventListener("pointerdown", onDown, true);
+        document.removeEventListener("keydown", onKey, true);
+        window.removeEventListener("resize", close);
+        if (onClose) onClose();
+      }
+      document.addEventListener("pointerdown", onDown, true);
+      document.addEventListener("keydown", onKey, true);
+      window.addEventListener("resize", close);
+      panel._wuiClose = close;
+    }, 0);
+
+    return function () {
+      clearTimeout(timer);
+      if (panel._wuiClose) panel._wuiClose();
+    };
+  };
+
+  /** 使浮层内部可获得焦点 */
+  WinUI.focusFirst = function (panel) {
+    const target = panel.querySelector(
+      '[autofocus],button:not([disabled]),[tabindex]:not([tabindex="-1"]),input,select,textarea'
+    );
+    if (target) target.focus({ preventScroll: true });
+  };
+
+  /** 焦点陷阱（对话框用） */
+  WinUI.trapFocus = function (container) {
+    function onKey(e) {
+      if (e.key !== "Tab") return;
+      const items = Array.prototype.filter.call(
+        container.querySelectorAll(
+          'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        ),
+        (el) => el.offsetParent !== null
+      );
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    container.addEventListener("keydown", onKey);
+    return () => container.removeEventListener("keydown", onKey);
+  };
+})(window);
+
+;
+/* ---- inputs.js ---- */
+/*!
+ * WinUI 3 for the Web — Inputs
+ * Button / CheckBox / RadioButton / ToggleSwitch / TextBox / PasswordBox /
+ * NumberBox / AutoSuggestBox / ComboBox / Slider / RatingControl / Progress
+ */
+(function (global) {
+  "use strict";
+  const WinUI = global.WinUI;
+  const U = WinUI.util;
+  const W = WinUI.WuiElement;
+  const icon = WinUI.icon;
+
+  const STAR_D =
+    "M8 2.1l1.83 3.72 4.1.6-2.97 2.9.7 4.1L8 11.48l-3.66 1.94.7-4.1L2.07 6.42l4.1-.6z";
+
+  function starSvg(filled) {
+    return (
+      '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="' +
+      STAR_D +
+      '" fill="' +
+      (filled ? "currentColor" : "none") +
+      '" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>'
+    );
+  }
+
+  /* ==================================================================
+   * Button
+   * ================================================================== */
+  class WuiButton extends W {
+    static observedAttributes = [
+      "variant",
+      "size",
+      "icon",
+      "disabled",
+      "checked",
+      "chevron",
+      "tooltip",
+    ];
+
+    build() {
+      this.classList.add("wui-btn");
+      if (!this.hasAttribute("role")) this.setAttribute("role", "button");
+      this._tabIndex();
+
+      this._onClick = (e) => {
+        if (this.hasAttribute("disabled")) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return;
+        }
+        if (this.hasAttribute("toggle")) {
+          const next = !this.hasAttribute("checked");
+          this.setAttr("checked", next);
+          this.sync();
+          this.emit("toggle", { checked: next });
+        }
+      };
+      this.addEventListener("click", this._onClick);
+
+      this._onKey = (e) => {
+        if (e.key === " " || e.key === "Enter") {
+          if (e.key === " ") e.preventDefault();
+          if (e.repeat) return;
+          this.click();
+        }
+      };
+      this.addEventListener("keydown", this._onKey);
+
+      if (this.hasAttribute("tooltip")) this.setAttribute("title", this.getAttribute("tooltip"));
+    }
+
+    _tabIndex() {
+      this.setAttribute("tabindex", this.hasAttribute("disabled") ? "-1" : "0");
+    }
+
+    sync() {
+      const variant = this.getAttribute("variant");
+      const size = this.getAttribute("size");
+      const disabled = this.hasAttribute("disabled");
+      const isToggle = this.hasAttribute("toggle");
+      const checked = this.hasAttribute("checked");
+
+      this.classList.add("wui-btn");
+      this.classList.toggle("wui-btn--accent", variant === "accent");
+      this.classList.toggle("wui-btn--subtle", variant === "subtle");
+      this.classList.toggle("wui-btn--hyperlink", variant === "hyperlink");
+      this.classList.toggle("wui-btn--accent-outline", variant === "accent-outline");
+      this.classList.toggle("wui-btn--sm", size === "sm");
+      this.classList.toggle("wui-btn--lg", size === "lg");
+      this.classList.toggle("wui-btn--stretch", this.hasAttribute("stretch"));
+      this.classList.toggle(
+        "wui-btn--icon",
+        this.hasAttribute("icon") && !this.textContent.trim()
+      );
+
+      if (isToggle) {
+        this.setAttribute("aria-pressed", checked ? "true" : "false");
+        this.setAttribute("aria-checked", checked ? "true" : "false");
+      } else {
+        this.removeAttribute("aria-pressed");
+        this.removeAttribute("aria-checked");
+      }
+
+      if (disabled) {
+        this.setAttribute("aria-disabled", "true");
+        this.setAttribute("tabindex", "-1");
+      } else {
+        this.removeAttribute("aria-disabled");
+        this.setAttribute("tabindex", "0");
+      }
+
+      // 前置图标
+      const iconName = this.getAttribute("icon");
+      let iconEl = this.querySelector(":scope > .wui-btn__icon");
+      if (iconName) {
+        if (!iconEl) {
+          this.insertAdjacentHTML("afterbegin", icon(iconName, "wui-btn__icon"));
+        } else {
+          iconEl.outerHTML = icon(iconName, "wui-btn__icon");
+        }
+      } else if (iconEl) {
+        iconEl.remove();
+      }
+
+      // 下拉箭头
+      let chev = this.querySelector(":scope > .wui-btn__chevron");
+      if (this.hasAttribute("chevron")) {
+        if (!chev) {
+          this.insertAdjacentHTML(
+            "beforeend",
+            '<span class="wui-btn__chevron">' + icon("chevron-down") + "</span>"
+          );
+        }
+      } else if (chev) {
+        chev.remove();
+      }
+    }
+  }
+
+  /* ==================================================================
+   * DropDownButton / SplitButton
+   * ================================================================== */
+  class WuiDropDownButton extends W {
+    static observedAttributes = ["label", "icon", "items", "variant", "disabled", "size"];
+
+    build() {
+      this.style.display = "inline-flex";
+      this._btn = document.createElement("button");
+      this._btn.type = "button";
+      this._btn.className = "wui-btn";
+      this._btn.style.width = "100%";
+      this.innerHTML = "";
+      this.appendChild(this._btn);
+
+      this._btn.addEventListener("click", () => this._open());
+      this._btn.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this._open();
+        }
+      });
+    }
+
+    sync() {
+      const label = this.getAttribute("label") || "";
+      const iconName = this.getAttribute("icon");
+      const variant = this.getAttribute("variant");
+      const size = this.getAttribute("size");
+      const disabled = this.hasAttribute("disabled");
+      this._btn.className = "wui-btn";
+      if (variant === "accent") this._btn.classList.add("wui-btn--accent");
+      if (variant === "subtle") this._btn.classList.add("wui-btn--subtle");
+      if (size === "sm") this._btn.classList.add("wui-btn--sm");
+      this._btn.disabled = disabled;
+      this._btn.innerHTML =
+        (iconName ? icon(iconName, "wui-btn__icon") : "") +
+        '<span class="wui-btn__label">' +
+        U.esc(label) +
+        "</span>" +
+        '<span class="wui-btn__chevron">' +
+        icon("chevron-down") +
+        "</span>";
+    }
+
+    _open() {
+      if (this.hasAttribute("disabled")) return;
+      const items = (this.getAttribute("items") || "").split(",").filter(Boolean);
+      const panel = WinUI.menuPanel(
+        items.map((label, i) => ({ label: label.trim(), value: i })),
+        (item) => {
+          this.emit("select", item);
+        }
+      );
+      WinUI.layerHost().appendChild(panel);
+      WinUI.position(this._btn, panel, { gap: 4 });
+      WinUI.dismissable(panel, this._btn, () => panel.remove());
+      WinUI.focusFirst(panel);
+    }
+  }
+
+  class WuiSplitButton extends W {
+    static observedAttributes = ["label", "icon", "items", "variant", "disabled", "size"];
+
+    build() {
+      this.classList.add("wui-splitbtn");
+      this._main = document.createElement("button");
+      this._main.type = "button";
+      this._more = document.createElement("button");
+      this._more.type = "button";
+      this._more.setAttribute("aria-label", "更多选项");
+      this.appendChild(this._main);
+      this.appendChild(this._more);
+
+      this._main.addEventListener("click", () => this.emit("click", {}));
+      this._more.addEventListener("click", () => this._open());
+    }
+
+    sync() {
+      const variant = this.getAttribute("variant");
+      const size = this.getAttribute("size");
+      const disabled = this.hasAttribute("disabled");
+      const cls = (base) => {
+        let c = "wui-btn wui-btn--subtle " + base;
+        if (variant === "accent") c += " wui-btn--accent";
+        if (size === "sm") c += " wui-btn--sm";
+        return c;
+      };
+      this._main.className = cls("wui-splitbtn__main");
+      this._more.className = cls("wui-splitbtn__more");
+      const label = this.getAttribute("label") || "";
+      const iconName = this.getAttribute("icon");
+      this._main.innerHTML =
+        (iconName ? icon(iconName, "wui-btn__icon") : "") + "<span>" + U.esc(label) + "</span>";
+      this._more.innerHTML = icon("chevron-down");
+      this._main.disabled = disabled;
+      this._more.disabled = disabled;
+    }
+
+    _open() {
+      const items = (this.getAttribute("items") || "").split(",").filter(Boolean);
+      const panel = WinUI.menuPanel(
+        items.map((label, i) => ({ label: label.trim(), value: i })),
+        (item) => this.emit("select", item)
+      );
+      WinUI.layerHost().appendChild(panel);
+      WinUI.position(this._more, panel, { gap: 4, align: "end" });
+      WinUI.dismissable(panel, this._more, () => panel.remove());
+      WinUI.focusFirst(panel);
+    }
+  }
+
+  /* ==================================================================
+   * CheckBox / RadioButton / ToggleSwitch
+   * ================================================================== */
+  class WuiCheckbox extends W {
+    static observedAttributes = ["checked", "disabled", "indeterminate", "label"];
+
+    build() {
+      this.classList.add("wui-checkbox");
+      this.setAttribute("role", "checkbox");
+
+      this._label = document.createElement("span");
+      this._label.className = "wui-checkbox__label";
+
+      this._box = document.createElement("span");
+      this._box.className = "wui-checkbox__box";
+      this._box.innerHTML =
+        '<svg viewBox="0 0 12 12"><path d="M2 6.4 4.7 9 10 3.2"/></svg>';
+
+      const content = U.take(this);
+      this.appendChild(this._box);
+      this.appendChild(this._label);
+      content.forEach((n) => this._label.appendChild(n));
+
+      this._onClick = () => this.toggle();
+      this.addEventListener("click", this._onClick);
+      this.addEventListener("keydown", (e) => {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          this.toggle();
+        }
+      });
+    }
+
+    toggle() {
+      if (this.hasAttribute("disabled")) return;
+      const next = !this.hasAttribute("checked");
+      this.setAttr("checked", next);
+      this.setAttr("indeterminate", false);
+      this.sync();
+      this.emit("change", { checked: next });
+      this.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    sync() {
+      const checked = this.hasAttribute("checked");
+      const mixed = this.hasAttribute("indeterminate");
+      this.setAttribute("aria-checked", mixed ? "mixed" : checked ? "true" : "false");
+      this.setAttribute("tabindex", this.hasAttribute("disabled") ? "-1" : "0");
+      this.setAttribute(
+        "aria-disabled",
+        this.hasAttribute("disabled") ? "true" : this.getAttribute("aria-disabled") || "false"
+      );
+      if (!this._label.textContent.trim()) {
+        this._label.textContent = this.getAttribute("label") || "";
+        this._label.hidden = !this._label.textContent;
+      }
+    }
+  }
+
+  class WuiRadio extends W {
+    static observedAttributes = ["checked", "disabled", "name", "label", "inline"];
+
+    build() {
+      this.classList.add("wui-radio");
+      this.setAttribute("role", "radio");
+
+      this._label = document.createElement("span");
+      this._label.className = "wui-radio__label";
+      this._dot = document.createElement("span");
+      this._dot.className = "wui-radio__dot";
+
+      const content = U.take(this);
+      this.appendChild(this._dot);
+      this.appendChild(this._label);
+      content.forEach((n) => this._label.appendChild(n));
+
+      this.addEventListener("click", () => this.select());
+      this.addEventListener("keydown", (e) => {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          this.select();
+        } else if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+          e.preventDefault();
+          this._step(1);
+        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+          e.preventDefault();
+          this._step(-1);
+        }
+      });
+    }
+
+    select() {
+      if (this.hasAttribute("disabled")) return;
+      const name = this.getAttribute("name");
+      if (name) {
+        document.querySelectorAll('wui-radio[name="' + name + '"]').forEach((r) => {
+          if (r !== this) {
+            r.setAttr("checked", false);
+            r.sync();
+          }
+        });
+      }
+      this.setAttr("checked", true);
+      this.sync();
+      this.emit("change", { value: this.getAttribute("value") });
+      this.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    _step(dir) {
+      const name = this.getAttribute("name");
+      if (!name) return;
+      const list = Array.prototype.slice.call(
+        document.querySelectorAll('wui-radio[name="' + name + '"]:not([disabled])')
+      );
+      const i = list.indexOf(this);
+      const next = list[(i + dir + list.length) % list.length];
+      if (next) {
+        next.select();
+        next.focus();
+      }
+    }
+
+    sync() {
+      const checked = this.hasAttribute("checked");
+      this.setAttribute("aria-checked", checked ? "true" : "false");
+      this.setAttribute("tabindex", this.hasAttribute("disabled") ? "-1" : "0");
+      this.classList.toggle("wui-radio--inline", this.hasAttribute("inline"));
+      if (!this._label.textContent.trim()) {
+        this._label.textContent = this.getAttribute("label") || "";
+        this._label.hidden = !this._label.textContent;
+      }
+    }
+  }
+
+  class WuiSwitch extends W {
+    static observedAttributes = ["checked", "disabled", "label", "on-content", "off-content"];
+
+    build() {
+      this.classList.add("wui-switch");
+      this.setAttribute("role", "switch");
+
+      this._label = document.createElement("span");
+      this._label.className = "wui-switch__label";
+      this._track = document.createElement("span");
+      this._track.className = "wui-switch__track";
+      this._knob = document.createElement("span");
+      this._knob.className = "wui-switch__knob";
+      this._track.appendChild(this._knob);
+
+      const content = U.take(this);
+      this.appendChild(this._track);
+      this.appendChild(this._label);
+      content.forEach((n) => this._label.appendChild(n));
+
+      this.addEventListener("click", () => this.toggle());
+      this.addEventListener("keydown", (e) => {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          this.toggle();
+        } else if (e.key === "ArrowLeft") {
+          this._set(false);
+        } else if (e.key === "ArrowRight") {
+          this._set(true);
+        }
+      });
+    }
+
+    toggle() {
+      this._set(!this.hasAttribute("checked"));
+    }
+
+    _set(v) {
+      if (this.hasAttribute("disabled")) return;
+      this.setAttr("checked", v);
+      this.sync();
+      this.emit("change", { checked: !!v });
+      this.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    sync() {
+      const checked = this.hasAttribute("checked");
+      this.setAttribute("aria-checked", checked ? "true" : "false");
+      this.setAttribute("tabindex", this.hasAttribute("disabled") ? "-1" : "0");
+      if (!this._label.textContent.trim()) {
+        this._label.textContent = this.getAttribute("label") || "";
+        this._label.hidden = !this._label.textContent;
+      }
+    }
+  }
+
+  /* ==================================================================
+   * 文本输入基类
+   * ================================================================== */
+  class TextInputBase extends W {
+    static observedAttributes = [
+      "header",
+      "placeholder",
+      "value",
+      "description",
+      "error",
+      "disabled",
+      "readonly",
+      "multiline",
+      "clearable",
+      "required",
+      "maxlength",
+      "icon",
+    ];
+
+    get inputType() {
+      return "text";
+    }
+    get isPassword() {
+      return false;
+    }
+
+    build() {
+      this.classList.add("wui-field");
+      const initialText = this.textContent.trim();
+      this.innerHTML = "";
+
+      this._headerEl = U.el("div", { class: "wui-field__header" });
+      this._box = U.el("div", { class: "wui-textbox" });
+      this._descEl = U.el("div", { class: "wui-field__desc" });
+      this._errEl = U.el("div", { class: "wui-field__error" });
+      this._descEl.hidden = true;
+      this._errEl.hidden = true;
+
+      if (this.hasAttribute("icon")) {
+        this._box.insertAdjacentHTML("beforeend", icon(this.getAttribute("icon"), "wui-textbox__prefix"));
+      }
+
+      const multiline = this.hasAttribute("multiline");
+      this._input = document.createElement(multiline ? "textarea" : "input");
+      this._input.className = "wui-textbox__input";
+      if (!multiline) this._input.type = this.inputType;
+      if (multiline) this._input.rows = 3;
+      this._box.appendChild(this._input);
+
+      if (this.isPassword) {
+        this._action = U.el("button", {
+          class: "wui-textbox__action",
+          type: "button",
+          "aria-label": "显示密码",
+        });
+        this._action.innerHTML = icon("eye");
+        this._box.appendChild(this._action);
+        this._action.addEventListener("click", () => {
+          const reveal = this._input.type === "password";
+          this._input.type = reveal ? "text" : "password";
+          this._action.innerHTML = icon(reveal ? "eye-off" : "eye");
+          this._action.setAttribute("aria-label", reveal ? "隐藏密码" : "显示密码");
+        });
+      } else if (this.hasAttribute("clearable")) {
+        this._action = U.el("button", {
+          class: "wui-textbox__action",
+          type: "button",
+          "aria-label": "清除",
+        });
+        this._action.innerHTML = icon("close");
+        this._box.appendChild(this._action);
+        this._action.addEventListener("click", () => {
+          this.value = "";
+          this._input.focus();
+          this._emit();
+        });
+      }
+
+      this.appendChild(this._headerEl);
+      this.appendChild(this._box);
+      this.appendChild(this._descEl);
+      this.appendChild(this._errEl);
+
+      if (!this.hasAttribute("value") && initialText) this._value = initialText;
+      else this._value = this.getAttribute("value") || "";
+
+      this._input.value = this._value;
+
+      this._onInput = () => {
+        this._value = this._input.value;
+        this._silent = true;
+        this.setAttribute("value", this._value);
+        this._silent = false;
+        this._box.classList.toggle("wui-textbox--has-value", !!this._value);
+        this._emit();
+      };
+      this._input.addEventListener("input", this._onInput);
+      this._input.addEventListener("change", () => this.emit("change", { value: this._value }));
+
+      this._input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !this.hasAttribute("multiline")) {
+          this.emit("submit", { value: this._value });
+        }
+      });
+    }
+
+    _emit() {
+      this.emit("input", { value: this._value });
+    }
+
+    get value() {
+      return this._input ? this._input.value : this.getAttribute("value") || "";
+    }
+
+    set value(v) {
+      if (!this._input) return;
+      this._input.value = v == null ? "" : v;
+      this._value = this._input.value;
+      this._silent = true;
+      this.setAttribute("value", this._value);
+      this._silent = false;
+      this._box.classList.toggle("wui-textbox--has-value", !!this._value);
+    }
+
+    sync() {
+      const header = this.getAttribute("header");
+      this._headerEl.innerHTML = header
+        ? U.esc(header) +
+          (this.hasAttribute("required")
+            ? '<span class="wui-field__required" aria-hidden="true">*</span>'
+            : "")
+        : "";
+      this._headerEl.hidden = !header;
+
+      const desc = this.getAttribute("description");
+      this._descEl.textContent = desc || "";
+      this._descEl.hidden = !desc;
+
+      const error = this.getAttribute("error");
+      this._errEl.innerHTML = error ? icon("error", "wui-icon--sm") + "<span>" + U.esc(error) + "</span>" : "";
+      this._errEl.hidden = !error;
+      this._box.classList.toggle("wui-textbox--error", !!error);
+
+      const placeholder = this.getAttribute("placeholder");
+      if (placeholder) this._input.placeholder = placeholder;
+      else this._input.removeAttribute("placeholder");
+
+      const disabled = this.hasAttribute("disabled");
+      this._input.disabled = disabled;
+      this._box.classList.toggle("wui-textbox--disabled", disabled);
+
+      this._input.readOnly = this.hasAttribute("readonly");
+
+      if (this.hasAttribute("multiline") && this._input.tagName !== "TEXTAREA") {
+        this._input = this._replaceInput("textarea");
+      }
+      this._box.classList.toggle("wui-textbox--multiline", this.hasAttribute("multiline"));
+
+      const maxlength = this.getAttribute("maxlength");
+      if (maxlength) this._input.setAttribute("maxlength", maxlength);
+      else this._input.removeAttribute("maxlength");
+
+      const value = this.getAttribute("value");
+      if (value != null && value !== this._input.value && document.activeElement !== this._input) {
+        this._input.value = value;
+        this._value = value;
+      }
+      this._box.classList.toggle("wui-textbox--has-value", !!this._input.value);
+
+      if (this._action && !this.isPassword) this._action.hidden = !this._input.value;
+    }
+
+    _replaceInput(tag) {
+      const next = document.createElement(tag);
+      next.className = "wui-textbox__input";
+      next.value = this._input.value;
+      this._input.replaceWith(next);
+      next.addEventListener("input", this._onInput);
+      return next;
+    }
+  }
+
+  class WuiTextBox extends TextInputBase {}
+
+  class WuiPasswordBox extends TextInputBase {
+    get inputType() {
+      return "password";
+    }
+    get isPassword() {
+      return true;
+    }
+  }
+
+  /* ==================================================================
+   * NumberBox
+   * ================================================================== */
+  class WuiNumberBox extends W {
+    static observedAttributes = [
+      "header",
+      "value",
+      "min",
+      "max",
+      "step",
+      "disabled",
+      "description",
+      "placeholder",
+      "show-spin",
+    ];
+
+    build() {
+      this.classList.add("wui-field");
+      this.innerHTML = "";
+      this._headerEl = U.el("div", { class: "wui-field__header" });
+      this._box = U.el("div", { class: "wui-numberbox" });
+
+      this._input = document.createElement("input");
+      this._input.className = "wui-numberbox__input";
+      this._input.type = "text";
+      this._input.inputMode = "decimal";
+      this._box.appendChild(this._input);
+
+      this._spin = U.el("div", { class: "wui-numberbox__spin" });
+      this._spin.innerHTML =
+        '<button type="button" aria-label="增加">' +
+        icon("chevron-up") +
+        '</button><button type="button" aria-label="减少">' +
+        icon("chevron-down") +
+        "</button>";
+      this._box.appendChild(this._spin);
+
+      this.appendChild(this._headerEl);
+      this.appendChild(this._box);
+
+      this._spin.children[0].addEventListener("click", () => this._nudge(1));
+      this._spin.children[1].addEventListener("click", () => this._nudge(-1));
+
+      this._input.addEventListener("change", () => this._commit(this._input.value));
+      this._input.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          this._nudge(1);
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          this._nudge(-1);
+        } else if (e.key === "Enter") {
+          this._commit(this._input.value);
+        }
+      });
+    }
+
+    get min() {
+      const v = parseFloat(this.getAttribute("min"));
+      return Number.isNaN(v) ? -Infinity : v;
+    }
+
+    get max() {
+      const v = parseFloat(this.getAttribute("max"));
+      return Number.isNaN(v) ? Infinity : v;
+    }
+
+    get step() {
+      const v = parseFloat(this.getAttribute("step"));
+      return Number.isNaN(v) ? 1 : v;
+    }
+
+    get value() {
+      const v = parseFloat(this._input.value);
+      return Number.isNaN(v) ? 0 : v;
+    }
+
+    _nudge(dir) {
+      if (this.hasAttribute("disabled")) return;
+      this._commit((this.value || 0) + dir * this.step);
+    }
+
+    _commit(raw) {
+      let v = parseFloat(String(raw).replace(/[^0-9.+-]/g, ""));
+      if (Number.isNaN(v)) v = 0;
+      v = U.clamp(v, this.min, this.max);
+      v = Math.round(v * 100000) / 100000;
+      this._input.value = String(v);
+      this.setAttr("value", v);
+      this.emit("change", { value: v });
+      this.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    sync() {
+      const header = this.getAttribute("header");
+      this._headerEl.textContent = header || "";
+      this._headerEl.hidden = !header;
+
+      const value = this.getAttribute("value");
+      if (value != null && document.activeElement !== this._input) this._input.value = value;
+      else if (value == null && !this._input.value) this._input.value = "0";
+
+      this._input.placeholder = this.getAttribute("placeholder") || "";
+      this._input.disabled = this.hasAttribute("disabled");
+      this._spin.hidden = this.hasAttribute("show-spin") ? false : this._spin.hidden;
+      if (!this.hasAttribute("show-spin")) this._spin.style.display = "none";
+      else this._spin.style.display = "";
+    }
+  }
+
+  /* ==================================================================
+   * AutoSuggestBox
+   * ================================================================== */
+  class WuiAutoSuggest extends W {
+    static observedAttributes = ["placeholder", "value", "items", "header", "icon"];
+
+    build() {
+      this.classList.add("wui-field", "wui-autosuggest");
+      this.innerHTML = "";
+      this._headerEl = U.el("div", { class: "wui-field__header" });
+      this._box = U.el("div", { class: "wui-textbox" });
+      this._box.insertAdjacentHTML("beforeend", icon("search", "wui-textbox__prefix"));
+      this._input = document.createElement("input");
+      this._input.className = "wui-textbox__input";
+      this._input.type = "search";
+      this._box.appendChild(this._input);
+      this.appendChild(this._headerEl);
+      this.appendChild(this._box);
+
+      this._input.addEventListener("input", () => this._show());
+      this._input.addEventListener("focus", () => this._show());
+      this._input.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          this._move(e.key === "ArrowDown" ? 1 : -1);
+        } else if (e.key === "Enter") {
+          const sel = this._panel && this._panel.querySelector('[aria-selected="true"]');
+          if (sel) this._choose(sel.dataset.value);
+          else this.emit("query", { query: this._input.value });
+        } else if (e.key === "Escape") {
+          this._hide();
+        }
+      });
+    }
+
+    get _items() {
+      return (this.getAttribute("items") || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+
+    _show() {
+      const q = this._input.value.trim().toLowerCase();
+      const list = this._items.filter((i) => !q || i.toLowerCase().includes(q));
+      if (!list.length) return this._hide();
+      if (!this._panel) {
+        this._panel = U.el("div", { class: "wui-suggest-list", role: "listbox" });
+        this.appendChild(this._panel);
+      }
+      this._panel.innerHTML = list
+        .map(
+          (item, i) =>
+            '<div class="wui-suggest-item" role="option" data-value="' +
+            U.esc(item) +
+            '" aria-selected="' +
+            (i === 0) +
+            '">' +
+            icon("search") +
+            "<span>" +
+            U.esc(item) +
+            "</span></div>"
+        )
+        .join("");
+      this._panel.hidden = false;
+      this._panel.querySelectorAll(".wui-suggest-item").forEach((el) => {
+        el.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          this._choose(el.dataset.value);
+        });
+      });
+    }
+
+    _hide() {
+      if (this._panel) this._panel.hidden = true;
+    }
+
+    _move(dir) {
+      if (!this._panel || this._panel.hidden) return this._show();
+      const items = Array.prototype.slice.call(this._panel.children);
+      let i = items.findIndex((el) => el.getAttribute("aria-selected") === "true");
+      items.forEach((el) => el.setAttribute("aria-selected", "false"));
+      i = (i + dir + items.length) % items.length;
+      items[i].setAttribute("aria-selected", "true");
+    }
+
+    _choose(value) {
+      this._input.value = value;
+      this._hide();
+      this.emit("select", { value: value });
+      this.emit("input", { value: value });
+    }
+
+    sync() {
+      const header = this.getAttribute("header");
+      this._headerEl.textContent = header || "";
+      this._headerEl.hidden = !header;
+      this._input.placeholder = this.getAttribute("placeholder") || "搜索";
+      const value = this.getAttribute("value");
+      if (value != null && document.activeElement !== this._input) this._input.value = value;
+    }
+  }
+
+  /* ==================================================================
+   * ComboBox
+   * ================================================================== */
+  class WuiComboBox extends W {
+    static observedAttributes = ["header", "placeholder", "items", "selected-index", "value", "disabled"];
+
+    build() {
+      this.classList.add("wui-field");
+      this.innerHTML = "";
+      this._headerEl = U.el("div", { class: "wui-field__header" });
+      this._combo = U.el("div", { class: "wui-combobox", role: "combobox", tabindex: "0" });
+      this._combo.setAttribute("aria-haspopup", "listbox");
+      this._combo.setAttribute("aria-expanded", "false");
+
+      this._combo.innerHTML =
+        '<button type="button" class="wui-combobox__button" tabindex="-1">' +
+        '<span class="wui-combobox__value wui-combobox__value--placeholder"></span>' +
+        '<span class="wui-combobox__chevron">' +
+        icon("chevron-down") +
+        "</span></button>";
+
+      this.appendChild(this._headerEl);
+      this.appendChild(this._combo);
+
+      this._valueEl = this._combo.querySelector(".wui-combobox__value");
+
+      this._combo.addEventListener("click", () => this._toggle());
+      this._combo.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+          e.preventDefault();
+          this._open();
+        } else if (e.key === "Escape") {
+          this._close();
+        }
+      });
+    }
+
+    get options() {
+      const opts = Array.prototype.map.call(this.querySelectorAll("option"), (o) => ({
+        label: o.textContent.trim(),
+        value: o.value || o.textContent.trim(),
+      }));
+      if (opts.length) return opts;
+      return (this.getAttribute("items") || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => ({ label: s, value: s }));
+    }
+
+    get selectedIndex() {
+      const v = this.getAttribute("selected-index");
+      return v == null ? -1 : parseInt(v, 10);
+    }
+
+    set selectedIndex(i) {
+      this.setAttr("selected-index", i);
+      this.sync();
+      this.emit("change", { index: i, value: (this.options[i] || {}).value });
+    }
+
+    _toggle() {
+      if (this.hasAttribute("disabled")) return;
+      if (this._panel) this._close();
+      else this._open();
+    }
+
+    _open() {
+      if (this.hasAttribute("disabled")) return;
+      const options = this.options;
+      if (!options.length) return;
+      if (this._panel) this._panel.remove();
+
+      const panel = U.el("div", { class: "wui-combobox__dropdown", role: "listbox" });
+      panel.style.position = "fixed";
+      panel.innerHTML = options
+        .map(
+          (o, i) =>
+            '<div class="wui-combobox__item" role="option" data-index="' +
+            i +
+            '" aria-selected="' +
+            (i === this.selectedIndex) +
+            '">' +
+            U.esc(o.label) +
+            "</div>"
+        )
+        .join("");
+      document.body.appendChild(panel);
+      panel.style.minWidth = this._combo.offsetWidth + "px";
+      panel.style.width = this._combo.offsetWidth + "px";
+      WinUI.position(this._combo, panel, { gap: 4 });
+      this._panel = panel;
+      this._combo.setAttribute("aria-expanded", "true");
+
+      panel.querySelectorAll(".wui-combobox__item").forEach((el) => {
+        el.addEventListener("click", () => {
+          this.selectedIndex = parseInt(el.dataset.index, 10);
+          this._close();
+          this._combo.focus();
+        });
+      });
+
+      this._cleanup = WinUI.dismissable(panel, this._combo, () => this._close());
+      const sel = panel.querySelector('[aria-selected="true"]');
+      if (sel) sel.scrollIntoView({ block: "nearest" });
+    }
+
+    _close() {
+      if (this._panel) {
+        this._panel.remove();
+        this._panel = null;
+      }
+      this._combo.setAttribute("aria-expanded", "false");
+      if (this._cleanup) this._cleanup();
+    }
+
+    sync() {
+      const header = this.getAttribute("header");
+      this._headerEl.textContent = header || "";
+      this._headerEl.hidden = !header;
+
+      const options = this.options;
+      const idx = this.selectedIndex;
+      const placeholder = this.getAttribute("placeholder") || "请选择";
+      const disabled = this.hasAttribute("disabled");
+
+      if (idx >= 0 && options[idx]) {
+        this._valueEl.textContent = options[idx].label;
+        this._valueEl.classList.remove("wui-combobox__value--placeholder");
+      } else {
+        this._valueEl.textContent = placeholder;
+        this._valueEl.classList.add("wui-combobox__value--placeholder");
+      }
+      this._combo.setAttribute("tabindex", disabled ? "-1" : "0");
+      this._combo.style.opacity = disabled ? "0.5" : "";
+      this._combo.style.pointerEvents = disabled ? "none" : "";
+    }
+  }
+
+  /* ==================================================================
+   * Slider
+   * ================================================================== */
+  class WuiSlider extends W {
+    static observedAttributes = ["min", "max", "step", "value", "disabled", "show-value"];
+
+    build() {
+      this.classList.add("wui-slider");
+      this.setAttribute("role", "slider");
+      this.setAttribute("tabindex", "0");
+      this.innerHTML =
+        '<div class="wui-slider__track"><div class="wui-slider__rail">' +
+        '<div class="wui-slider__fill"></div></div><div class="wui-slider__thumb"></div></div>' +
+        '<span class="wui-slider__value"></span>';
+      this._track = this.querySelector(".wui-slider__track");
+      this._fill = this.querySelector(".wui-slider__fill");
+      this._thumb = this.querySelector(".wui-slider__thumb");
+      this._valueEl = this.querySelector(".wui-slider__value");
+
+      this._dragging = false;
+
+      this._track.addEventListener("pointerdown", (e) => {
+        if (this.hasAttribute("disabled")) return;
+        this._dragging = true;
+        this._track.setPointerCapture(e.pointerId);
+        this._setFromPointer(e);
+      });
+      this._track.addEventListener("pointermove", (e) => {
+        if (this._dragging) this._setFromPointer(e);
+      });
+      this._track.addEventListener("pointerup", (e) => {
+        if (!this._dragging) return;
+        this._dragging = false;
+        try {
+          this._track.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+        this.emit("change", { value: this.value });
+        this.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      this._track.addEventListener("pointercancel", () => (this._dragging = false));
+
+      this.addEventListener("keydown", (e) => {
+        if (this.hasAttribute("disabled")) return;
+        const step = this.step;
+        let v = this.value;
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") v += step;
+        else if (e.key === "ArrowLeft" || e.key === "ArrowDown") v -= step;
+        else if (e.key === "Home") v = this.min;
+        else if (e.key === "End") v = this.max;
+        else if (e.key === "PageUp") v += step * 10;
+        else if (e.key === "PageDown") v -= step * 10;
+        else return;
+        e.preventDefault();
+        this.value = v;
+        this.emit("change", { value: this.value });
+      });
+    }
+
+    get min() {
+      const v = parseFloat(this.getAttribute("min"));
+      return Number.isNaN(v) ? 0 : v;
+    }
+    get max() {
+      const v = parseFloat(this.getAttribute("max"));
+      return Number.isNaN(v) ? 100 : v;
+    }
+    get step() {
+      const v = parseFloat(this.getAttribute("step"));
+      return Number.isNaN(v) ? 1 : v;
+    }
+    get value() {
+      const v = parseFloat(this.getAttribute("value"));
+      return Number.isNaN(v) ? this.min : v;
+    }
+    set value(v) {
+      v = U.clamp(v, this.min, this.max);
+      v = Math.round(v / this.step) * this.step;
+      v = Math.round(v * 1000) / 1000;
+      this.setAttr("value", v);
+      this._paint();
+    }
+
+    _setFromPointer(e) {
+      const rect = this._track.querySelector(".wui-slider__rail").getBoundingClientRect();
+      const ratio = U.clamp((e.clientX - rect.left) / rect.width, 0, 1);
+      this.value = this.min + ratio * (this.max - this.min);
+      this.emit("input", { value: this.value });
+    }
+
+    _paint() {
+      const pct = ((this.value - this.min) / (this.max - this.min || 1)) * 100;
+      this._fill.style.width = pct + "%";
+      this._thumb.style.left = pct + "%";
+      this._valueEl.textContent = String(this.value);
+      this._valueEl.hidden = !this.hasAttribute("show-value");
+      this.setAttribute("aria-valuenow", this.value);
+      this.setAttribute("aria-valuemin", this.min);
+      this.setAttribute("aria-valuemax", this.max);
+    }
+
+    sync() {
+      this._paint();
+      const disabled = this.hasAttribute("disabled");
+      this.setAttribute("aria-disabled", disabled ? "true" : "false");
+      this.setAttribute("tabindex", disabled ? "-1" : "0");
+      if (this._valueEl) this._valueEl.style.display = this.hasAttribute("show-value") ? "" : "none";
+    }
+  }
+
+  /* ==================================================================
+   * RatingControl
+   * ================================================================== */
+  class WuiRating extends W {
+    static observedAttributes = ["value", "max", "disabled", "caption"];
+
+    build() {
+      this.classList.add("wui-rating");
+      this.setAttribute("role", "slider");
+      this.setAttribute("tabindex", "0");
+      this._stars = [];
+      this._render();
+
+      this._onClick = (e) => {
+        const star = e.target.closest(".wui-rating__star");
+        if (!star || this.hasAttribute("disabled")) return;
+        const i = this._stars.indexOf(star);
+        if (i < 0) return;
+        this.value = i + 1 === this.value ? 0 : i + 1;
+        this.emit("change", { value: this.value });
+        this.dispatchEvent(new Event("change", { bubbles: true }));
+      };
+      this.addEventListener("click", this._onClick);
+
+      this.addEventListener("pointermove", (e) => {
+        const star = e.target.closest(".wui-rating__star");
+        if (!star) return;
+        const i = this._stars.indexOf(star);
+        this._preview(i + 1);
+      });
+      this.addEventListener("pointerleave", () => this._preview(0));
+
+      this.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+          e.preventDefault();
+          this.value = Math.min(this.max, this.value + 1);
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+          e.preventDefault();
+          this.value = Math.max(0, this.value - 1);
+        } else return;
+        this.emit("change", { value: this.value });
+      });
+    }
+
+    get max() {
+      return parseInt(this.getAttribute("max"), 10) || 5;
+    }
+    get value() {
+      return parseFloat(this.getAttribute("value")) || 0;
+    }
+    set value(v) {
+      this.setAttr("value", v);
+      this._paint();
+    }
+
+    _render() {
+      const max = this.max;
+      this.innerHTML = "";
+      this._stars = [];
+      for (let i = 0; i < max; i++) {
+        const s = U.el("span", { class: "wui-rating__star" });
+        s.innerHTML = starSvg(false);
+        this.appendChild(s);
+        this._stars.push(s);
+      }
+      this._captionEl = U.el("span", { class: "wui-rating__caption" });
+      this.appendChild(this._captionEl);
+    }
+
+    _paint(n) {
+      const value = n == null ? this.value : n;
+      this._stars.forEach((s, i) => {
+        const on = i < value;
+        s.classList.toggle("wui-rating__star--on", on);
+        s.innerHTML = starSvg(on);
+      });
+      this._captionEl.textContent = this.hasAttribute("caption")
+        ? value + " / " + this.max
+        : "";
+      this.setAttribute("aria-valuenow", value);
+      this.setAttribute("aria-valuemax", this.max);
+    }
+
+    _preview(n) {
+      this._paint(n || undefined);
+    }
+
+    sync() {
+      if (this._stars.length !== this.max) this._render();
+      this._paint();
+      this.setAttribute("aria-disabled", this.hasAttribute("disabled") ? "true" : "false");
+    }
+  }
+
+  /* ==================================================================
+   * ProgressBar / ProgressRing / InfoBadge / InfoBar
+   * ================================================================== */
+  class WuiProgressBar extends W {
+    static observedAttributes = ["value", "indeterminate", "paused", "error"];
+
+    build() {
+      this.classList.add("wui-progress");
+      this.innerHTML = '<div class="wui-progress__fill"></div><div class="wui-progress__dot"></div>';
+      this._fill = this.querySelector(".wui-progress__fill");
+      this._dot = this.querySelector(".wui-progress__dot");
+      this.setAttribute("role", "progressbar");
+    }
+
+    sync() {
+      const indeterminate = this.hasAttribute("indeterminate");
+      this.classList.toggle("wui-progress--indeterminate", indeterminate);
+      this.classList.toggle("wui-progress--paused", this.hasAttribute("paused"));
+      this.classList.toggle("wui-progress--error", this.hasAttribute("error"));
+      const v = U.clamp(parseFloat(this.getAttribute("value")) || 0, 0, 100);
+      this._fill.style.width = indeterminate ? "40%" : v + "%";
+      this._dot.style.display = indeterminate ? "" : "none";
+      this.setAttribute("aria-valuenow", indeterminate ? "" : v);
+      this.removeAttribute("aria-valuenow");
+      if (!indeterminate) this.setAttribute("aria-valuenow", v);
+    }
+  }
+
+  class WuiProgressRing extends W {
+    static observedAttributes = ["value", "indeterminate", "size", "show-value"];
+
+    build() {
+      this.classList.add("wui-ring");
+      this.innerHTML =
+        '<svg class="wui-ring__svg" viewBox="0 0 32 32">' +
+        '<circle class="wui-ring__track" cx="16" cy="16" r="14"></circle>' +
+        '<circle class="wui-ring__arc" cx="16" cy="16" r="14"></circle>' +
+        "</svg>" +
+        '<span class="wui-ring__label"></span>';
+      this._arc = this.querySelector(".wui-ring__arc");
+      this._label = this.querySelector(".wui-ring__label");
+      this._circ = 2 * Math.PI * 14;
+      this._arc.style.strokeDasharray = this._circ;
+      this._arc.style.strokeDashoffset = this._circ;
+    }
+
+    sync() {
+      const size = this.getAttribute("size");
+      if (size) this.style.setProperty("--size", size + "px");
+      const indeterminate = this.hasAttribute("indeterminate");
+      this.classList.toggle("wui-ring--indeterminate", indeterminate);
+      const v = U.clamp(parseFloat(this.getAttribute("value")) || 0, 0, 100);
+      if (!indeterminate) {
+        this._arc.style.strokeDashoffset = this._circ * (1 - v / 100);
+        this._arc.style.strokeDasharray = this._circ;
+      } else {
+        this._arc.style.strokeDashoffset = 0;
+        this._arc.style.strokeDasharray = "";
+      }
+      this._label.textContent = this.hasAttribute("show-value") && !indeterminate ? v + "%" : "";
+      this.setAttribute("role", "progressbar");
+    }
+  }
+
+  class WuiBadge extends W {
+    static observedAttributes = ["variant", "value"];
+
+    build() {
+      this.classList.add("wui-badge");
+      this._sync();
+    }
+
+    _sync() {
+      const v = this.getAttribute("value");
+      if (v != null) this.textContent = v;
+      const variant = this.getAttribute("variant");
+      this.classList.toggle("wui-badge--dot", variant === "dot");
+      this.classList.toggle("wui-badge--critical", variant === "critical");
+      this.classList.toggle("wui-badge--attention", variant === "attention");
+      this.classList.toggle("wui-badge--subtle", variant === "subtle");
+    }
+
+    sync() {
+      this._sync();
+    }
+  }
+
+  class WuiInfoBar extends W {
+    static observedAttributes = ["severity", "title", "message", "closable"];
+
+    build() {
+      this.classList.add("wui-infobar");
+      this.setAttribute("role", "status");
+      const actions = U.take(this);
+
+      this._icon = U.el("div", { class: "wui-infobar__icon" });
+      this._body = U.el("div", { class: "wui-infobar__body" });
+      this._title = U.el("div", { class: "wui-infobar__title" });
+      this._msg = U.el("div", { class: "wui-infobar__message" });
+      this._actions = U.el("div", { class: "wui-infobar__action" });
+      this._body.appendChild(this._title);
+      this._body.appendChild(this._msg);
+
+      this.appendChild(this._icon);
+      this.appendChild(this._body);
+      this.appendChild(this._actions);
+      actions.forEach((n) => this._actions.appendChild(n));
+
+      this._close = U.el("button", {
+        class: "wui-infobar__close",
+        type: "button",
+        "aria-label": "关闭",
+      });
+      this._close.innerHTML = icon("close");
+      this._close.addEventListener("click", () => {
+        this.hidden = true;
+        this.emit("close", {});
+      });
+      this.appendChild(this._close);
+    }
+
+    sync() {
+      const severity = (this.getAttribute("severity") || "informational").toLowerCase();
+      this.classList.remove(
+        "wui-infobar--info",
+        "wui-infobar--success",
+        "wui-infobar--caution",
+        "wui-infobar--error"
+      );
+      const map = {
+        informational: ["info", "info"],
+        info: ["info", "info"],
+        success: ["success", "success"],
+        warning: ["caution", "warning"],
+        caution: ["caution", "warning"],
+        error: ["error", "error"],
+      };
+      const conf = map[severity] || map.informational;
+      this.classList.add("wui-infobar--" + conf[0]);
+      this._icon.innerHTML = icon(conf[1]);
+
+      const title = this.getAttribute("title");
+      const message = this.getAttribute("message");
+      this._title.textContent = title || "";
+      this._title.hidden = !title;
+      this._msg.textContent = message || "";
+      this._msg.hidden = !message;
+      this._close.hidden = !this.hasAttribute("closable");
+    }
+  }
+
+  /* ==================================================================
+   * 注册
+   * ================================================================== */
+  WinUI.define("wui-button", WuiButton, WuiButton.observedAttributes);
+  WinUI.define("wui-dropdown-button", WuiDropDownButton, WuiDropDownButton.observedAttributes);
+  WinUI.define("wui-split-button", WuiSplitButton, WuiSplitButton.observedAttributes);
+  WinUI.define("wui-checkbox", WuiCheckbox, WuiCheckbox.observedAttributes);
+  WinUI.define("wui-radio", WuiRadio, WuiRadio.observedAttributes);
+  WinUI.define("wui-switch", WuiSwitch, WuiSwitch.observedAttributes);
+  WinUI.define("wui-textbox", WuiTextBox, WuiTextBox.observedAttributes);
+  WinUI.define("wui-password-box", WuiPasswordBox, WuiPasswordBox.observedAttributes);
+  WinUI.define("wui-numberbox", WuiNumberBox, WuiNumberBox.observedAttributes);
+  WinUI.define("wui-autosuggest", WuiAutoSuggest, WuiAutoSuggest.observedAttributes);
+  WinUI.define("wui-combobox", WuiComboBox, WuiComboBox.observedAttributes);
+  WinUI.define("wui-slider", WuiSlider, WuiSlider.observedAttributes);
+  WinUI.define("wui-rating", WuiRating, WuiRating.observedAttributes);
+  WinUI.define("wui-progress-bar", WuiProgressBar, WuiProgressBar.observedAttributes);
+  WinUI.define("wui-progress-ring", WuiProgressRing, WuiProgressRing.observedAttributes);
+  WinUI.define("wui-badge", WuiBadge, WuiBadge.observedAttributes);
+  WinUI.define("wui-infobar", WuiInfoBar, WuiInfoBar.observedAttributes);
+})(window);
+
+;
+/* ---- collections.js ---- */
+/*!
+ * WinUI 3 for the Web — Navigation & Collections
+ * NavigationView / TabView / ListView / GridView / TreeView / Expander /
+ * CommandBar / BreadcrumbBar / PipsPager / PersonPicture / CalendarView / DatePicker
+ */
+(function (global) {
+  "use strict";
+  const WinUI = global.WinUI;
+  const U = WinUI.util;
+  const W = WinUI.WuiElement;
+  const icon = WinUI.icon;
+
+  /* ==================================================================
+   * NavigationView
+   * ================================================================== */
+  class WuiNavView extends W {
+    static observedAttributes = ["pane-mode", "header", "brand", "icon", "pane-open"];
+
+    build() {
+      this.classList.add("wui-nav");
+      const items = [];
+      const footer = [];
+      const registered = [];
+      const headerSlot = [];
+      const content = [];
+
+      const childNodes = Array.prototype.slice.call(this.children);
+      childNodes.forEach((el) => {
+        const tag = el.tagName;
+        const slot = el.getAttribute("slot");
+        if (slot === "footer") footer.push(el);
+        else if (slot === "header") headerSlot.push(el);
+        else if (tag === "WUI-NAV-ITEM" || tag === "WUI-NAV-GROUP") items.push(el);
+        else content.push(el);
+      });
+
+      const pane = U.el("aside", { class: "wui-nav__pane" });
+      const top = U.el("div", { class: "wui-nav__top" });
+      const hamburger = U.el("button", {
+        class: "wui-nav__hamburger",
+        type: "button",
+        "aria-label": "切换导航",
+      });
+      hamburger.innerHTML = icon("menu", "wui-icon--lg");
+      top.appendChild(hamburger);
+
+      const brand = U.el("div", { class: "wui-nav__brand" });
+      brand.innerHTML =
+        this.hasAttribute("icon") ? icon(this.getAttribute("icon"), "wui-icon--lg") : "";
+      const brandText = U.el("span", { class: "wui-nav__brand-text" });
+      brandText.textContent = this.getAttribute("brand") || "应用";
+      brand.appendChild(brandText);
+      top.appendChild(brand);
+
+      const scroll = U.el("div", { class: "wui-nav__scroll wui-scroll" });
+
+      // 组装导航项（组展开为标题 + 子项）
+      function decorate(item) {
+        item.classList.add("wui-nav__item");
+        registered.push(item);
+        item.setAttribute("tabindex", "0");
+        item.setAttribute("role", "link");
+        if (!item.querySelector(":scope > .wui-nav__item-text")) {
+          const nodes = U.take(item);
+          if (item.hasAttribute("icon")) {
+            item.insertAdjacentHTML("afterbegin", icon(item.getAttribute("icon")));
+          }
+          const text = U.el("span", { class: "wui-nav__item-text" });
+          nodes.forEach((n) => text.appendChild(n));
+          item.appendChild(text);
+        }
+        if (item.hasAttribute("badge")) {
+          const b = U.el("span", { class: "wui-badge" });
+          b.textContent = item.getAttribute("badge");
+          item.appendChild(b);
+        }
+        if (item.hasAttribute("dot")) {
+          item.insertAdjacentHTML("beforeend", '<span class="wui-badge wui-badge--dot"></span>');
+        }
+        return item;
+      }
+
+      items.forEach((el) => {
+        if (el.tagName === "WUI-NAV-GROUP") {
+          const head = U.el("div", { class: "wui-nav__group-header" });
+          head.textContent = el.getAttribute("header") || "";
+          scroll.appendChild(head);
+          Array.prototype.slice.call(el.children).forEach((child) => {
+            scroll.appendChild(decorate(child));
+          });
+          el.remove();
+        } else {
+          scroll.appendChild(decorate(el));
+        }
+      });
+
+      const footerEl = U.el("div", { class: "wui-nav__footer" });
+      footer.forEach((el) => footerEl.appendChild(decorate(el)));
+
+      pane.appendChild(top);
+      pane.appendChild(scroll);
+      if (footer.length) pane.appendChild(footerEl);
+
+      const scrim = U.el("div", { class: "wui-nav__scrim" });
+
+      const navContent = U.el("div", { class: "wui-nav__content" });
+      const header = U.el("header", { class: "wui-nav__header" });
+      const headerTitle = U.el("div", { class: "wui-nav__header-title" });
+      headerTitle.textContent = this.getAttribute("header") || "";
+      header.appendChild(headerTitle);
+      headerSlot.forEach((el) => header.appendChild(el));
+      navContent.appendChild(header);
+
+      const body = U.el("div", { class: "wui-nav__content-body", style: "display:flex;flex:1 1 auto;min-height:0;position:relative" });
+      content.forEach((el) => body.appendChild(el));
+      navContent.appendChild(body);
+
+      this.innerHTML = "";
+      this.appendChild(pane);
+      this.appendChild(scrim);
+      this.appendChild(navContent);
+
+      this._pane = pane;
+      this._scroll = scroll;
+      this._items = registered;
+      this._headerTitle = headerTitle;
+      this._body = body;
+      this._usersetMode = null;
+
+      hamburger.addEventListener("click", () => {
+        if (this._mode === "minimal") {
+          this.setAttribute("data-pane-open", this.getAttribute("data-pane-open") === "true" ? "false" : "true");
+        } else {
+          this.setAttribute("pane-mode", this._mode === "compact" ? "expanded" : "compact");
+        }
+      });
+      scrim.addEventListener("click", () => this.setAttribute("data-pane-open", "false"));
+
+      this._onNavClick = (e) => {
+        const item = e.target.closest(".wui-nav__item");
+        if (!item) return;
+        this.select(item);
+      };
+      pane.addEventListener("click", this._onNavClick);
+      pane.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          const item = e.target.closest(".wui-nav__item");
+          if (item) {
+            e.preventDefault();
+            this.select(item);
+          }
+        }
+      });
+
+      // 自适应
+      if (window.ResizeObserver) {
+        this._ro = new ResizeObserver(() => this._applyAutoMode());
+        this._ro.observe(this);
+      }
+      window.addEventListener("resize", () => this._applyAutoMode());
+
+      // 初始选中
+      const initial =
+        this.querySelector('.wui-nav__item[selected], .wui-nav__item[aria-current="page"]') ||
+        registered[0];
+      if (initial) this.select(initial, true);
+    }
+
+    _applyAutoMode() {
+      const requested = this.getAttribute("pane-mode") || "auto";
+      let mode = requested;
+      if (requested === "auto") {
+        const w = this.clientWidth;
+        mode = w < 700 ? "minimal" : w < 1000 ? "compact" : "expanded";
+      }
+      this._mode = mode;
+      this.setAttribute("data-pane-mode", mode);
+      this.setAttribute("data-pane-open", this.getAttribute("data-pane-open") || "false");
+    }
+
+    select(item, silent) {
+      if (!item) return;
+      (this._items || []).forEach((el) => {
+        el.removeAttribute("aria-current");
+        el.removeAttribute("selected");
+      });
+      item.setAttribute("aria-current", "page");
+      const label = item.querySelector(".wui-nav__item-text");
+      const title = label ? label.textContent : "";
+      if (title) this._headerTitle.textContent = title;
+
+      const page = item.getAttribute("page") || item.getAttribute("target");
+      if (page) {
+        const pages = this._body.querySelectorAll("[data-page]");
+        let matched = false;
+        pages.forEach((p) => {
+          const on = p.getAttribute("data-page") === page;
+          p.hidden = !on;
+          if (on) matched = true;
+        });
+        if (matched && this._mode === "minimal") this.setAttribute("data-pane-open", "false");
+      }
+      if (!silent) this.emit("navigate", { page: page, label: title, item: item });
+    }
+
+    sync() {
+      this._applyAutoMode();
+      const header = this.getAttribute("header");
+      if (header) this._headerTitle.textContent = header;
+      const brandText = this.querySelector(".wui-nav__brand-text");
+      if (brandText && this.hasAttribute("brand")) brandText.textContent = this.getAttribute("brand");
+    }
+  }
+
+  /* ==================================================================
+   * TabView
+   * ================================================================== */
+  class WuiTabView extends W {
+    static observedAttributes = ["addable"];
+
+    build() {
+      this.classList.add("wui-tabview");
+      this._tabs = [];
+      const tabs = Array.prototype.filter.call(
+        this.children,
+        (el) => el.tagName === "WUI-TAB"
+      );
+
+      const strip = U.el("div", { class: "wui-tabview__strip", role: "tablist" });
+      const body = U.el("div", { class: "wui-tabview__body" });
+
+      this.innerHTML = "";
+      this.appendChild(strip);
+      this.appendChild(body);
+      this._strip = strip;
+      this._body = body;
+
+      tabs.forEach((tab) => this._addTab(tab));
+
+      if (this.hasAttribute("addable")) {
+        const add = U.el("button", {
+          class: "wui-tabview__add",
+          type: "button",
+          "aria-label": "新建标签页",
+        });
+        add.innerHTML = icon("add");
+        add.addEventListener("click", () => this.emit("add", {}));
+        strip.appendChild(add);
+      }
+
+      const initial = this._tabs.findIndex((t) => t.tab.hasAttribute("selected"));
+      this.select(initial < 0 ? 0 : initial, true);
+    }
+
+    _addTab(tab) {
+      const i = this._tabs.length;
+      const header =
+        tab.getAttribute("header") || tab.getAttribute("label") || "标签页 " + (i + 1);
+      const btn = U.el("button", { class: "wui-tab", type: "button", role: "tab" });
+      btn.innerHTML =
+        (tab.hasAttribute("icon") ? icon(tab.getAttribute("icon"), "wui-tab__icon") : "") +
+        '<span class="wui-tab__text">' +
+        U.esc(header) +
+        "</span>" +
+        (tab.hasAttribute("closable")
+          ? '<span class="wui-tab__close" role="button" aria-label="关闭">' +
+            icon("close") +
+            "</span>"
+          : "");
+
+      const addBtn = this._strip.querySelector(".wui-tabview__add");
+      if (addBtn) this._strip.insertBefore(btn, addBtn);
+      else this._strip.appendChild(btn);
+
+      tab.classList.add("wui-tabview__page");
+      tab.setAttribute("role", "tabpanel");
+      this._body.appendChild(tab);
+
+      const entry = { tab: tab, btn: btn };
+      this._tabs.push(entry);
+
+      btn.addEventListener("click", (e) => {
+        if (e.target.closest(".wui-tab__close")) {
+          this.closeTab(entry);
+          return;
+        }
+        this.select(this._tabs.indexOf(entry));
+      });
+      return entry;
+    }
+
+    select(index, silent) {
+      this._tabs.forEach((entry, i) => {
+        const on = i === index;
+        entry.btn.setAttribute("aria-selected", on ? "true" : "false");
+        entry.btn.setAttribute("tabindex", on ? "0" : "-1");
+        entry.tab.setAttribute("data-active", on ? "true" : "false");
+        entry.tab.setAttribute("aria-hidden", on ? "false" : "true");
+      });
+      this._active = index;
+      if (!silent) this.emit("select", { index: index });
+    }
+
+    closeTab(entry) {
+      const i = this._tabs.indexOf(entry);
+      if (i < 0) return;
+      this._tabs.splice(i, 1);
+      entry.btn.remove();
+      entry.tab.remove();
+      this.emit("close", { index: i, header: entry.btn.textContent.trim() });
+      if (this._tabs.length) this.select(Math.min(i, this._tabs.length - 1), true);
+    }
+
+    addTab(header, contentHTML) {
+      const tab = document.createElement("wui-tab");
+      tab.setAttribute("header", header);
+      tab.setAttribute("closable", "");
+      tab.innerHTML = contentHTML || "";
+      this._addTab(tab);
+      this.select(this._tabs.length - 1);
+      return tab;
+    }
+
+    sync() {}
+  }
+
+  /* ==================================================================
+   * ListView
+   * ================================================================== */
+  class WuiListView extends W {
+    static observedAttributes = ["selection-mode", "selected-index"];
+
+    build() {
+      this.classList.add("wui-listview");
+      this.setAttribute("role", "listbox");
+      const items = Array.prototype.filter.call(this.children, (el) => el.tagName === "WUI-LIST-ITEM");
+      items.forEach((item) => this._decorate(item));
+
+      this._items = items;
+      this.addEventListener("click", (e) => {
+        const item = e.target.closest("wui-list-item");
+        if (!item) return;
+        this._pick(item);
+      });
+      this.addEventListener("keydown", (e) => {
+        const items = this._items;
+        const i = items.indexOf(document.activeElement.closest("wui-list-item"));
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const next = items[U.clamp(i + (e.key === "ArrowDown" ? 1 : -1), 0, items.length - 1)];
+          if (next) {
+            next.focus();
+            if (this.getAttribute("selection-mode") !== "none") this._pick(next);
+          }
+        }
+      });
+
+      const initial = items.findIndex((i) => i.hasAttribute("selected"));
+      if (initial >= 0) this.select(initial, true);
+    }
+
+    _decorate(item) {
+      if (item._decorated) return;
+      item._decorated = true;
+      item.classList.add("wui-list-item");
+      item.setAttribute("tabindex", "0");
+      item.setAttribute("role", "option");
+
+      const nodes = U.take(item);
+      const body = U.el("div", { class: "wui-list-item__body" });
+      const title = U.el("div", { class: "wui-list-item__title" });
+      nodes.forEach((n) => title.appendChild(n));
+      body.appendChild(title);
+      if (item.hasAttribute("subtitle")) {
+        const sub = U.el("div", { class: "wui-list-item__subtitle" });
+        sub.textContent = item.getAttribute("subtitle");
+        body.appendChild(sub);
+      }
+
+      item.innerHTML =
+        (item.hasAttribute("icon") ? icon(item.getAttribute("icon"), "wui-list-item__icon") : "") ;
+      item.appendChild(body);
+      if (item.hasAttribute("meta")) {
+        const meta = U.el("div", { class: "wui-list-item__meta" });
+        meta.textContent = item.getAttribute("meta");
+        item.appendChild(meta);
+      }
+    }
+
+    _pick(item) {
+      this.select(this._items.indexOf(item));
+      this.emit("select", {
+        index: this._items.indexOf(item),
+        value: item.getAttribute("value") || item.textContent.trim(),
+      });
+    }
+
+    select(index, silent) {
+      if (this.getAttribute("selection-mode") === "none") return;
+      const multi = this.getAttribute("selection-mode") === "multiple";
+      this._items.forEach((item, i) => {
+        const on = multi ? i === index || item.getAttribute("aria-selected") === "true" : i === index;
+        item.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      this._selected = index;
+      if (!silent) {
+        const item = this._items[index];
+        if (item) item.scrollIntoView({ block: "nearest" });
+      }
+    }
+
+    sync() {
+      const idx = parseInt(this.getAttribute("selected-index"), 10);
+      if (!Number.isNaN(idx)) this.select(idx, true);
+    }
+  }
+
+  /* ==================================================================
+   * GridView
+   * ================================================================== */
+  class WuiGridView extends W {
+    static observedAttributes = ["selected-index", "selection-mode"];
+
+    build() {
+      this.classList.add("wui-gridview");
+      this.setAttribute("role", "listbox");
+      this._items = Array.prototype.filter.call(this.children, (el) => el.tagName === "WUI-GRID-ITEM");
+
+      this._items.forEach((item) => {
+        item.classList.add("wui-grid-item");
+        item.setAttribute("tabindex", "0");
+        item.setAttribute("role", "option");
+        const nodes = U.take(item);
+        const title = U.el("div", { class: "wui-grid-item__title" });
+        nodes.forEach((n) => title.appendChild(n));
+        item.innerHTML =
+          (item.hasAttribute("icon") ? icon(item.getAttribute("icon"), "wui-icon--lg wui-grid-item__media") : "") +
+          (item.hasAttribute("subtitle")
+            ? '<div class="wui-caption">' + U.esc(item.getAttribute("subtitle")) + "</div>"
+            : "");
+        item.appendChild(title);
+        item.setAttribute("aria-selected", item.hasAttribute("selected") ? "true" : "false");
+      });
+
+      this.addEventListener("click", (e) => {
+        const item = e.target.closest("wui-grid-item");
+        if (!item) return;
+        const i = this._items.indexOf(item);
+        this._items.forEach((el) => el.setAttribute("aria-selected", "false"));
+        item.setAttribute("aria-selected", "true");
+        this.emit("select", { index: i, value: item.textContent.trim() });
+      });
+    }
+
+    sync() {
+      const idx = parseInt(this.getAttribute("selected-index"), 10);
+      if (!Number.isNaN(idx) && this._items) {
+        this._items.forEach((el, i) => el.setAttribute("aria-selected", i === idx ? "true" : "false"));
+      }
+    }
+  }
+
+  /* ==================================================================
+   * TreeView
+   * ================================================================== */
+  class WuiTreeView extends W {
+    build() {
+      this.classList.add("wui-tree");
+      this.setAttribute("role", "tree");
+      this.addEventListener("click", (e) => {
+        const row = e.target.closest(".wui-tree__row");
+        if (!row) return;
+        const node = row.parentElement;
+        if (e.target.closest(".wui-tree__chevron")) {
+          node.setAttribute("data-expanded", node.getAttribute("data-expanded") === "true" ? "false" : "true");
+          return;
+        }
+        this.querySelectorAll(".wui-tree__row").forEach((r) => r.setAttribute("aria-selected", "false"));
+        row.setAttribute("aria-selected", "true");
+        this.emit("select", { label: row.textContent.trim(), node: node });
+      });
+    }
+    sync() {}
+  }
+
+  class WuiTreeNode extends W {
+    static observedAttributes = ["label", "expanded", "icon", "has-children"];
+
+    build() {
+      this.classList.add("wui-tree__node");
+      this.setAttribute("role", "treeitem");
+      const children = Array.prototype.filter.call(this.children, (el) => el.tagName === "WUI-TREE-NODE");
+      const label = this.getAttribute("label") || this.textContent.trim();
+
+      const row = U.el("div", { class: "wui-tree__row", tabindex: "0" });
+      row.innerHTML =
+        '<span class="wui-tree__chevron">' +
+        icon("chevron-right") +
+        "</span>" +
+        (this.hasAttribute("icon") ? icon(this.getAttribute("icon"), "wui-tree__icon") : "") +
+        "<span>" +
+        U.esc(label) +
+        "</span>";
+
+      this.innerHTML = "";
+      this.appendChild(row);
+      const wrap = U.el("div", { class: "wui-tree__children" });
+      children.forEach((c) => wrap.appendChild(c));
+      this.appendChild(wrap);
+
+      this.setAttribute("data-has-children", children.length ? "true" : "false");
+      if (children.length && !this.hasAttribute("expanded")) this.setAttribute("data-expanded", "false");
+      if (this.hasAttribute("expanded")) this.setAttribute("data-expanded", "true");
+    }
+
+    sync() {
+      if (this.hasAttribute("expanded")) this.setAttribute("data-expanded", "true");
+    }
+  }
+
+  /* ==================================================================
+   * Expander
+   * ================================================================== */
+  class WuiExpander extends W {
+    static observedAttributes = ["expanded", "header"];
+
+    build() {
+      this.classList.add("wui-expander");
+      const nodes = U.take(this);
+
+      const header = U.el("button", { class: "wui-expander__header", type: "button" });
+      header.innerHTML =
+        '<span class="wui-expander__chevron">' +
+        icon("chevron-right") +
+        '</span><span class="wui-expander__label"></span>';
+      const content = U.el("div", { class: "wui-expander__content" });
+      nodes.forEach((n) => content.appendChild(n));
+
+      this.innerHTML = "";
+      this.appendChild(header);
+      this.appendChild(content);
+      this._label = header.querySelector(".wui-expander__label");
+      this._content = content;
+
+      header.addEventListener("click", () => {
+        const open = this.getAttribute("data-expanded") === "true";
+        this.setAttribute("data-expanded", open ? "false" : "true");
+        this.emit(open ? "collapse" : "expand", {});
+      });
+    }
+
+    sync() {
+      this._label.textContent = this.getAttribute("header") || "";
+      if (this.hasAttribute("expanded")) this.setAttribute("data-expanded", "true");
+      else if (!this.hasAttribute("data-expanded")) this.setAttribute("data-expanded", "false");
+    }
+  }
+
+  /* ==================================================================
+   * CommandBar
+   * ================================================================== */
+  class WuiCommandBar extends W {
+    build() {
+      this.classList.add("wui-commandbar");
+      this.setAttribute("role", "toolbar");
+    }
+    sync() {}
+  }
+
+  class WuiAppBarButton extends W {
+    static observedAttributes = ["icon", "label", "disabled"];
+
+    build() {
+      this.classList.add("wui-appbar-btn");
+      this.setAttribute("role", "button");
+      this.setAttribute("tabindex", "0");
+      this.addEventListener("click", () => this.emit("click", {}));
+      this.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.click();
+        }
+      });
+    }
+
+    sync() {
+      const label = this.getAttribute("label") || "";
+      this.innerHTML =
+        icon(this.getAttribute("icon") || "more") + "<span>" + U.esc(label) + "</span>";
+      this.setAttribute("aria-label", label);
+      this.setAttribute("aria-disabled", this.hasAttribute("disabled") ? "true" : "false");
+      this.style.opacity = this.hasAttribute("disabled") ? "0.4" : "";
+    }
+  }
+
+  /* ==================================================================
+   * BreadcrumbBar
+   * ================================================================== */
+  class WuiBreadcrumb extends W {
+    static observedAttributes = ["items"];
+
+    build() {
+      this.classList.add("wui-breadcrumb");
+      this.setAttribute("role", "navigation");
+      this.setAttribute("aria-label", "面包屑");
+      this.addEventListener("click", (e) => {
+        const btn = e.target.closest(".wui-breadcrumb__item");
+        if (!btn) return;
+        this.emit("select", {
+          index: parseInt(btn.dataset.index, 10),
+          label: btn.textContent.trim(),
+        });
+      });
+    }
+
+    sync() {
+      const items = (this.getAttribute("items") || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      this.innerHTML = items
+        .map((label, i) => {
+          const last = i === items.length - 1;
+          const crumb =
+            '<button type="button" class="wui-breadcrumb__item" data-index="' +
+            i +
+            '"' +
+            (last ? ' aria-current="page"' : "") +
+            ">" +
+            U.esc(label) +
+            "</button>";
+          const sep = last
+            ? ""
+            : '<span class="wui-breadcrumb__sep">' + icon("chevron-right") + "</span>";
+          return crumb + sep;
+        })
+        .join("");
+    }
+  }
+
+  /* ==================================================================
+   * PipsPager
+   * ================================================================== */
+  class WuiPipsPager extends W {
+    static observedAttributes = ["count", "selected"];
+
+    build() {
+      this.classList.add("wui-pips");
+      this.addEventListener("click", (e) => {
+        const pip = e.target.closest(".wui-pips__pip");
+        if (!pip) return;
+        this.setAttribute("selected", pip.dataset.index);
+      });
+    }
+
+    sync() {
+      const count = parseInt(this.getAttribute("count"), 10) || 5;
+      const selected = parseInt(this.getAttribute("selected"), 10) || 0;
+      this.innerHTML = Array.from({ length: count })
+        .map(
+          (_, i) =>
+            '<button type="button" class="wui-pips__pip" data-index="' +
+            i +
+            '" aria-label="第 ' +
+            (i + 1) +
+            ' 页"' +
+            (i === selected ? ' aria-current="true"' : "") +
+            "></button>"
+        )
+        .join("");
+    }
+  }
+
+  /* ==================================================================
+   * PersonPicture
+   * ================================================================== */
+  class WuiPerson extends W {
+    static observedAttributes = ["initials", "size", "src", "badge"];
+
+    build() {
+      this.classList.add("wui-person");
+    }
+
+    sync() {
+      const size = this.getAttribute("size");
+      this.classList.toggle("wui-person--sm", size === "sm");
+      this.classList.toggle("wui-person--lg", size === "lg");
+      this.classList.toggle("wui-person--xl", size === "xl");
+      const src = this.getAttribute("src");
+      const initials = (this.getAttribute("initials") || this.textContent.trim() || "?").slice(0, 2);
+      this.innerHTML =
+        (src ? '<img src="' + U.esc(src) + '" alt="">' : U.esc(initials).toUpperCase()) +
+        (this.hasAttribute("badge") ? '<span class="wui-person__badge"></span>' : "");
+    }
+  }
+
+  /* ==================================================================
+   * CalendarView
+   * ================================================================== */
+  const MONTHS = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+  const DOW = ["一", "二", "三", "四", "五", "六", "日"];
+
+  function pad(n) {
+    return n < 10 ? "0" + n : "" + n;
+  }
+
+  function toISO(d) {
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  class WuiCalendar extends W {
+    static observedAttributes = ["value"];
+
+    build() {
+      this.classList.add("wui-calendar");
+      const today = new Date();
+      const initial = this.hasAttribute("value") ? new Date(this.getAttribute("value")) : today;
+      this._view = new Date(initial.getFullYear(), initial.getMonth(), 1);
+      this._selected = initial;
+
+      this.addEventListener("click", (e) => {
+        const nav = e.target.closest("[data-nav]");
+        if (nav) {
+          const dir = nav.dataset.nav === "prev" ? -1 : 1;
+          this._view = new Date(this._view.getFullYear(), this._view.getMonth() + dir, 1);
+          this._render();
+          return;
+        }
+        const day = e.target.closest(".wui-calendar__day");
+        if (day && day.dataset.date) {
+          this._selected = new Date(day.dataset.date);
+          this.setAttr("value", toISO(this._selected));
+          this._render();
+          this.emit("change", { value: toISO(this._selected) });
+          this.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      });
+    }
+
+    _render() {
+      const view = this._view;
+      const year = view.getFullYear();
+      const month = view.getMonth();
+      const first = new Date(year, month, 1);
+      const startOffset = (first.getDay() + 6) % 7; // 周一为首列
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const prevDays = new Date(year, month, 0).getDate();
+      const todayISO = toISO(new Date());
+      const selectedISO = this._selected ? toISO(this._selected) : "";
+
+      let cells = "";
+      for (let i = 0; i < 42; i++) {
+        const dayNum = i - startOffset + 1;
+        let d;
+        let outside = false;
+        if (dayNum < 1) {
+          d = new Date(year, month - 1, prevDays + dayNum);
+          outside = true;
+        } else if (dayNum > daysInMonth) {
+          d = new Date(year, month + 1, dayNum - daysInMonth);
+          outside = true;
+        } else {
+          d = new Date(year, month, dayNum);
+        }
+        const iso = toISO(d);
+        const cls =
+          "wui-calendar__day" +
+          (outside ? " wui-calendar__day--outside" : "") +
+          (iso === todayISO ? " wui-calendar__day--today" : "") +
+          (iso === selectedISO ? " wui-calendar__day--selected" : "");
+        cells += '<button type="button" class="' + cls + '" data-date="' + iso + '">' + d.getDate() + "</button>";
+      }
+
+      this.innerHTML =
+        '<div class="wui-calendar__header">' +
+        '<button type="button" class="wui-btn wui-btn--subtle wui-btn--icon wui-btn--sm" data-nav="prev" aria-label="上个月">' +
+        icon("chevron-left") +
+        "</button>" +
+        '<div class="wui-calendar__title">' +
+        year +
+        " 年 " +
+        MONTHS[month] +
+        "</div>" +
+        '<button type="button" class="wui-btn wui-btn--subtle wui-btn--icon wui-btn--sm" data-nav="next" aria-label="下个月">' +
+        icon("chevron-right") +
+        "</button>" +
+        "</div>" +
+        '<div class="wui-calendar__grid">' +
+        DOW.map((d) => '<div class="wui-calendar__dow">' + d + "</div>").join("") +
+        cells +
+        "</div>";
+    }
+
+    sync() {
+      if (this.hasAttribute("value")) {
+        const d = new Date(this.getAttribute("value"));
+        if (!Number.isNaN(d.getTime())) {
+          this._selected = d;
+          this._view = new Date(d.getFullYear(), d.getMonth(), 1);
+        }
+      }
+      this._render();
+    }
+  }
+
+  /* ==================================================================
+   * DatePicker
+   * ================================================================== */
+  class WuiDatePicker extends W {
+    static observedAttributes = ["value", "header"];
+
+    build() {
+      this.classList.add("wui-field");
+      this.innerHTML = "";
+      this._header = U.el("div", { class: "wui-field__header" });
+      this._box = U.el("div", { class: "wui-datepicker" });
+      this.appendChild(this._header);
+      this.appendChild(this._box);
+      this._date = new Date();
+
+      this._box.addEventListener("click", (e) => {
+        if (e.target.closest(".wui-datepicker__segment")) this._open();
+      });
+    }
+
+    _open() {
+      if (this._panel) return;
+      const panel = U.el("div", { class: "wui-calendar", style: "position:fixed" });
+      const cal = document.createElement("wui-calendar");
+      cal.setAttribute("value", toISO(this._date));
+      panel.appendChild(cal);
+      document.body.appendChild(panel);
+      WinUI.position(this._box, panel, { gap: 4 });
+      this._panel = panel;
+
+      cal.addEventListener("change", (e) => {
+        this._date = new Date(e.detail.value);
+        this.setAttr("value", toISO(this._date));
+        this._render();
+        this.emit("change", { value: toISO(this._date) });
+        this._close();
+      });
+      this._cleanup = WinUI.dismissable(panel, this._box, () => this._close());
+    }
+
+    _close() {
+      if (this._panel) {
+        this._panel.remove();
+        this._panel = null;
+      }
+      if (this._cleanup) this._cleanup();
+    }
+
+    _render() {
+      const d = this._date;
+      const seg = (text) =>
+        '<button type="button" class="wui-datepicker__segment"><span>' +
+        text +
+        '</span><span class="wui-icon">' +
+        icon("chevron-down") +
+        "</span></button>";
+      this._box.innerHTML =
+        seg(d.getFullYear() + " 年") + seg(MONTHS[d.getMonth()]) + seg(d.getDate() + " 日");
+    }
+
+    sync() {
+      const header = this.getAttribute("header");
+      this._header.textContent = header || "";
+      this._header.hidden = !header;
+      if (this.hasAttribute("value")) {
+        const d = new Date(this.getAttribute("value"));
+        if (!Number.isNaN(d.getTime())) this._date = d;
+      }
+      this._render();
+    }
+  }
+
+  /* ==================================================================
+   * 注册
+   * ================================================================== */
+  WinUI.define("wui-nav-view", WuiNavView, WuiNavView.observedAttributes);
+  WinUI.define("wui-tab-view", WuiTabView, WuiTabView.observedAttributes);
+  WinUI.define("wui-list-view", WuiListView, WuiListView.observedAttributes);
+  WinUI.define("wui-grid-view", WuiGridView, WuiGridView.observedAttributes);
+  WinUI.define("wui-tree-view", WuiTreeView);
+  WinUI.define("wui-tree-node", WuiTreeNode, WuiTreeNode.observedAttributes);
+  WinUI.define("wui-expander", WuiExpander, WuiExpander.observedAttributes);
+  WinUI.define("wui-command-bar", WuiCommandBar);
+  WinUI.define("wui-app-bar-button", WuiAppBarButton, WuiAppBarButton.observedAttributes);
+  WinUI.define("wui-breadcrumb", WuiBreadcrumb, WuiBreadcrumb.observedAttributes);
+  WinUI.define("wui-pips-pager", WuiPipsPager, WuiPipsPager.observedAttributes);
+  WinUI.define("wui-person", WuiPerson, WuiPerson.observedAttributes);
+  WinUI.define("wui-calendar", WuiCalendar, WuiCalendar.observedAttributes);
+  WinUI.define("wui-date-picker", WuiDatePicker, WuiDatePicker.observedAttributes);
+})(window);
+
+;
+/* ---- overlays.js ---- */
+/*!
+ * WinUI 3 for the Web — Overlays
+ * Flyout / MenuFlyout / ContentDialog / ToolTip / TeachingTip
+ */
+(function (global) {
+  "use strict";
+  const WinUI = global.WinUI;
+  const U = WinUI.util;
+  const icon = WinUI.icon;
+
+  /* ==================================================================
+   * 菜单面板
+   * ================================================================== */
+  /**
+   * @param {Array} items [{label,icon,accel,checked,disabled,separator,value}]
+   * @param {Function} onSelect
+   */
+  WinUI.menuPanel = function (items, onSelect) {
+    const panel = U.el("div", { class: "wui-flyout wui-menu", role: "menu" });
+    panel.innerHTML = items
+      .map((item, i) => {
+        if (item.separator) return '<div class="wui-menu__separator"></div>';
+        return (
+          '<button type="button" class="wui-menu__item" role="menuitem" data-index="' +
+          i +
+          '"' +
+          (item.disabled ? " disabled" : "") +
+          ' aria-checked="' +
+          (item.checked ? "true" : "false") +
+          '">' +
+          (item.checked
+            ? '<span class="wui-menu__check">' + icon("check") + "</span>"
+            : "") +
+          (item.icon ? icon(item.icon) : "") +
+          "<span>" +
+          U.esc(item.label) +
+          "</span>" +
+          (item.accel ? '<span class="wui-menu__accel">' + U.esc(item.accel) + "</span>" : "") +
+          "</button>"
+        );
+      })
+      .join("");
+
+    panel.querySelectorAll(".wui-menu__item").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const item = items[parseInt(btn.dataset.index, 10)];
+        if (item && item.disabled) return;
+        if (onSelect) onSelect(item, btn);
+        if (panel._wuiClose) panel._wuiClose();
+      });
+    });
+    return panel;
+  };
+
+  /**
+   * 在锚点处打开菜单
+   * @returns {{close:Function,panel:HTMLElement}}
+   */
+  WinUI.showMenu = function (anchor, items, opts) {
+    opts = opts || {};
+    const panel = WinUI.menuPanel(items, opts.onSelect);
+    WinUI.layerHost().appendChild(panel);
+    WinUI.position(anchor, panel, { gap: 4, align: opts.align || "start" });
+    WinUI.dismissable(panel, anchor, () => panel.remove());
+    WinUI.focusFirst(panel);
+    return {
+      panel: panel,
+      close() {
+        panel.remove();
+      },
+    };
+  };
+
+  /* ==================================================================
+   * Flyout
+   * ================================================================== */
+  WinUI.flyout = function (anchor, content, opts) {
+    opts = opts || {};
+    const panel = U.el("div", { class: "wui-flyout", role: "dialog" });
+    if (typeof content === "string") panel.innerHTML = content;
+    else if (content) panel.appendChild(content);
+    if (opts.className) panel.classList.add(opts.className);
+    WinUI.layerHost().appendChild(panel);
+    WinUI.position(anchor, panel, { gap: opts.gap == null ? 8 : opts.gap, align: opts.align });
+    const destroy = WinUI.dismissable(panel, anchor, () => {
+      panel.remove();
+      if (opts.onClose) opts.onClose();
+    });
+    return {
+      panel: panel,
+      close() {
+        destroy();
+        panel.remove();
+      },
+    };
+  };
+
+  /* ==================================================================
+   * ContentDialog
+   * ================================================================== */
+  /**
+   * @param {{title:string,body:string|Node,primaryText?:string,secondaryText?:string,
+   *          closeText?:string,defaultButton?:string,wide?:boolean,danger?:boolean}} opts
+   * @returns {Promise<'primary'|'secondary'|'close'>}
+   */
+  WinUI.dialog = function (opts) {
+    opts = opts || {};
+    return new Promise((resolve) => {
+      const smoke = U.el("div", { class: "wui-smoke" });
+      const dialog = U.el("div", {
+        class: "wui-dialog" + (opts.wide ? " wui-dialog--wide" : ""),
+        role: "dialog",
+        "aria-modal": "true",
+      });
+
+      const title = U.el("div", { class: "wui-dialog__title" });
+      title.textContent = opts.title || "";
+      title.hidden = !opts.title;
+
+      const body = U.el("div", { class: "wui-dialog__body" });
+      if (typeof opts.body === "string") body.innerHTML = opts.body;
+      else if (opts.body) body.appendChild(opts.body);
+
+      const actions = U.el("div", { class: "wui-dialog__actions" });
+
+      function makeBtn(label, variant) {
+        const b = U.el("button", { class: "wui-btn" + (variant ? " wui-btn--" + variant : ""), type: "button" });
+        b.textContent = label;
+        return b;
+      }
+
+      let primary;
+      if (opts.primaryText) {
+        primary = makeBtn(opts.primaryText, opts.danger ? "accent" : "accent");
+        if (opts.danger) primary.style.background = "var(--wui-critical)", (primary.style.color = "#fff");
+        actions.appendChild(primary);
+      }
+      if (opts.secondaryText) {
+        const sec = makeBtn(opts.secondaryText);
+        sec.addEventListener("click", () => finish("secondary"));
+        actions.appendChild(sec);
+      }
+      const close = makeBtn(opts.closeText || "取消");
+      close.addEventListener("click", () => finish("close"));
+      actions.appendChild(close);
+
+      dialog.appendChild(title);
+      dialog.appendChild(body);
+      dialog.appendChild(actions);
+      smoke.appendChild(dialog);
+      document.body.appendChild(smoke);
+
+      const untrap = WinUI.trapFocus(dialog);
+      const prevFocus = document.activeElement;
+
+      function onKey(e) {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          finish("close");
+        }
+      }
+      document.addEventListener("keydown", onKey, true);
+
+      function finish(result) {
+        document.removeEventListener("keydown", onKey, true);
+        untrap();
+        smoke.remove();
+        if (prevFocus && prevFocus.focus) prevFocus.focus({ preventScroll: true });
+        resolve(result);
+      }
+
+      if (primary) primary.addEventListener("click", () => finish("primary"));
+      smoke.addEventListener("pointerdown", (e) => {
+        if (e.target === smoke) finish("close");
+      });
+
+      requestAnimationFrame(() => {
+        if (primary && opts.defaultButton !== "close") primary.focus();
+        else close.focus();
+      });
+    });
+  };
+
+  /* ==================================================================
+   * ToolTip
+   * ================================================================== */
+  let tipEl = null;
+  let tipTimer = null;
+  let tipAnchor = null;
+
+  WinUI.showToolTip = function (anchor, text, opts) {
+    opts = opts || {};
+    WinUI.hideToolTip();
+    tipAnchor = anchor;
+    tipEl = U.el("div", { class: "wui-tooltip", role: "tooltip" });
+    tipEl.innerHTML = typeof text === "string" ? U.esc(text) : "";
+    document.body.appendChild(tipEl);
+    const placement = opts.placement || "top";
+    WinUI.position(anchor, tipEl, { gap: 6, placement: placement, align: "center" });
+    return tipEl;
+  };
+
+  WinUI.hideToolTip = function () {
+    clearTimeout(tipTimer);
+    if (tipEl) {
+      tipEl.remove();
+      tipEl = null;
+    }
+    tipAnchor = null;
+  };
+
+  /** 全局 data-tooltip 支持 */
+  function initTooltips() {
+    document.addEventListener("pointerover", (e) => {
+      const target = e.target.closest && e.target.closest("[data-tooltip]");
+      if (!target || target === tipAnchor) return;
+      clearTimeout(tipTimer);
+      tipTimer = setTimeout(() => {
+        const text = target.getAttribute("data-tooltip");
+        if (text) WinUI.showToolTip(target, text);
+      }, 550);
+    });
+    document.addEventListener("pointerout", (e) => {
+      const target = e.target.closest && e.target.closest("[data-tooltip]");
+      if (target && !target.contains(e.relatedTarget)) WinUI.hideToolTip();
+    });
+    document.addEventListener("pointerdown", () => WinUI.hideToolTip(), true);
+    window.addEventListener("blur", () => WinUI.hideToolTip());
+  }
+
+  /* ==================================================================
+   * TeachingTip
+   * ================================================================== */
+  WinUI.teachingTip = function (anchor, opts) {
+    opts = opts || {};
+    const panel = U.el("div", { class: "wui-teaching-tip", role: "dialog" });
+    panel.innerHTML =
+      '<div class="wui-teaching-tip__arrow"></div>' +
+      '<div class="wui-teaching-tip__title">' +
+      U.esc(opts.title || "") +
+      "</div>" +
+      '<div class="wui-teaching-tip__body">' +
+      (opts.body || "") +
+      "</div>" +
+      '<div class="wui-teaching-tip__footer">' +
+      '<button type="button" class="wui-btn wui-btn--subtle wui-btn--sm" data-act="close">' +
+      U.esc(opts.closeText || "关闭") +
+      "</button>" +
+      (opts.actionText
+        ? '<button type="button" class="wui-btn wui-btn--accent wui-btn--sm" data-act="action">' +
+          U.esc(opts.actionText) +
+          "</button>"
+        : "") +
+      "</div>";
+
+    document.body.appendChild(panel);
+    WinUI.position(anchor, panel, { gap: 12, placement: opts.placement || "bottom", align: "start" });
+
+    const rect = anchor.getBoundingClientRect();
+    const arrow = panel.querySelector(".wui-teaching-tip__arrow");
+    const panelRect = panel.getBoundingClientRect();
+    arrow.style.left = U.clamp(rect.left + rect.width / 2 - panelRect.left - 6, 10, panelRect.width - 22) + "px";
+    if (panelRect.top > rect.bottom) arrow.style.top = "-7px";
+    else arrow.style.bottom = "-7px";
+
+    function close() {
+      panel.remove();
+      if (opts.onClose) opts.onClose();
+    }
+    panel.querySelector('[data-act="close"]').addEventListener("click", close);
+    const action = panel.querySelector('[data-act="action"]');
+    if (action)
+      action.addEventListener("click", () => {
+        if (opts.onAction) opts.onAction();
+        close();
+      });
+
+    const dismiss = WinUI.dismissable(panel, anchor, close);
+    return { panel: panel, close: dismiss };
+  };
+
+  /* ==================================================================
+   * 初始化
+   * ================================================================== */
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initTooltips);
+  } else {
+    initTooltips();
+  }
+})(window);
+
+;
+/* ---- xaml.js ---- */
+/*!
+ * WinUI 3 for the Web — XAML 渲染桥
+ * 让你直接粘贴 WinUI 3 的 XAML 片段并在浏览器中渲染（支持常用控件与布局）。
+ */
+(function (global) {
+  "use strict";
+  const WinUI = global.WinUI;
+  const U = WinUI.util;
+
+  const TAGS = {
+    Button: { tag: "wui-button" },
+    RepeatButton: { tag: "wui-button" },
+    HyperlinkButton: { tag: "wui-button", attrs: { variant: "hyperlink" } },
+    ToggleButton: { tag: "wui-button", bool: { toggle: true } },
+    SplitButton: { tag: "wui-split-button" },
+    DropDownButton: { tag: "wui-dropdown-button" },
+    CheckBox: { tag: "wui-checkbox" },
+    RadioButton: { tag: "wui-radio" },
+    ToggleSwitch: { tag: "wui-switch" },
+    TextBox: { tag: "wui-textbox" },
+    PasswordBox: { tag: "wui-password-box" },
+    NumberBox: { tag: "wui-numberbox" },
+    AutoSuggestBox: { tag: "wui-autosuggest" },
+    ComboBox: { tag: "wui-combobox" },
+    ComboBoxItem: { tag: "option" },
+    Slider: { tag: "wui-slider" },
+    RatingControl: { tag: "wui-rating" },
+    ProgressBar: { tag: "wui-progress-bar" },
+    ProgressRing: { tag: "wui-progress-ring" },
+    InfoBar: { tag: "wui-infobar" },
+    InfoBadge: { tag: "wui-badge" },
+    Expander: { tag: "wui-expander" },
+    ListView: { tag: "wui-list-view" },
+    ListViewItem: { tag: "wui-list-item" },
+    GridView: { tag: "wui-grid-view" },
+    GridViewItem: { tag: "wui-grid-item" },
+    TreeView: { tag: "wui-tree-view" },
+    TreeViewItem: { tag: "wui-tree-node" },
+    NavigationView: { tag: "wui-nav-view" },
+    NavigationViewItem: { tag: "wui-nav-item" },
+    TabView: { tag: "wui-tab-view" },
+    TabViewItem: { tag: "wui-tab" },
+    PersonPicture: { tag: "wui-person" },
+    CalendarView: { tag: "wui-calendar" },
+    CalendarDatePicker: { tag: "wui-date-picker" },
+    DatePicker: { tag: "wui-date-picker" },
+    BreadcrumbBar: { tag: "wui-breadcrumb" },
+    PipsPager: { tag: "wui-pips-pager" },
+    CommandBar: { tag: "wui-command-bar" },
+    AppBarButton: { tag: "wui-app-bar-button" },
+    StackPanel: { tag: "div", cls: "wui-stack" },
+    Grid: { tag: "div", cls: "wui-grid" },
+    Border: { tag: "div", cls: "wui-card" },
+    ScrollViewer: { tag: "div", cls: "wui-scrollbox" },
+    RelativePanel: { tag: "div", cls: "wui-stack" },
+    TextBlock: { tag: "div" },
+    RichTextBlock: { tag: "div" },
+    Image: { tag: "img" },
+    WebView2: { tag: "div", cls: "wui-empty", text: "WebView" },
+  };
+
+  const ATTRS = {
+    Content: "content",
+    Text: "value",
+    Header: "header",
+    PlaceholderText: "placeholder",
+    Description: "description",
+    IsChecked: "checked",
+    IsExpanded: "expanded",
+    IsClosable: "closable",
+    Severity: "severity",
+    Value: "value",
+    Minimum: "min",
+    Maximum: "max",
+    SmallChange: "step",
+    SelectedIndex: "selected-index",
+    MaxRating: "max",
+    Icon: "icon",
+    Glyph: "icon",
+    Title: "title",
+    Message: "message",
+    Label: "label",
+    Width: "width",
+    Height: "height",
+    Margin: "margin",
+    Padding: "padding",
+    Spacing: "spacing",
+    CornerRadius: "radius",
+    Orientation: "orientation",
+    IsReadOnly: "readonly",
+    IsEnabled: "isenabled",
+    IsIndeterminate: "indeterminate",
+    IsActive: "indeterminate",
+    ShowValue: "show-value",
+    FontSize: "fontsize",
+    FontWeight: "fontweight",
+    Foreground: "foreground",
+  };
+
+  const SKIP = /^(x:|d:|mc:|AutomationProperties|ToolTipService|Grid\.|Canvas\.|VisualState|Name$|Style$|Background$|BorderBrush$|BorderThickness$)/;
+
+  /** 布尔型属性：XAML 的 True/False → HTML 的空属性 */
+  const BOOL = /^(checked|expanded|closable|readonly|indeterminate|selected|show-value|toggle)$/;
+
+  /** Margin/Padding "12,8,12,8" → CSS */
+  function box(value) {
+    const parts = String(value)
+      .split(",")
+      .map((v) => parseFloat(v))
+      .filter((v) => !Number.isNaN(v));
+    if (!parts.length) return "";
+    if (parts.length === 1) return parts[0] + "px";
+    if (parts.length === 2) return parts[1] + "px " + parts[0] + "px";
+    if (parts.length === 4)
+      return parts[1] + "px " + parts[2] + "px " + parts[3] + "px " + parts[0] + "px";
+    return "";
+  }
+
+  function resourceValue(value) {
+    if (typeof value !== "string") return value;
+    if (/^\{.*\}$/.test(value.trim())) return null;
+    return value;
+  }
+
+  function applyAttrs(el, node, map) {
+    const style = {};
+    Array.prototype.forEach.call(node.attributes, (attr) => {
+      const name = attr.name;
+      if (SKIP.test(name)) return;
+      const rawValue = resourceValue(attr.value);
+      if (rawValue == null) return;
+
+      if (name === "IsEnabled" && String(attr.value).toLowerCase() === "false") {
+        el.setAttribute("disabled", "");
+        return;
+      }
+      if (name === "Width") {
+        style.width = rawValue + "px";
+        return;
+      }
+      if (name === "Height") {
+        style.height = rawValue + "px";
+        return;
+      }
+      if (name === "Margin" || name === "Padding") {
+        style[name.toLowerCase()] = box(rawValue);
+        return;
+      }
+      if (name === "Spacing") {
+        style.gap = rawValue + "px";
+        return;
+      }
+      if (name === "CornerRadius") {
+        style.borderRadius = box(rawValue);
+        return;
+      }
+      if (name === "Foreground") {
+        style.color = /Accent/.test(attr.value) ? "var(--wui-accent)" : "";
+        return;
+      }
+      if (name === "Background" || name === "BorderBrush") return;
+
+      const mapped = ATTRS[name];
+      if (mapped) {
+        if (mapped === "content") {
+          el.setAttribute("label", rawValue);
+          return;
+        }
+        if (BOOL.test(mapped)) {
+          if (String(rawValue).toLowerCase() !== "false") el.setAttribute(mapped, "");
+          return;
+        }
+        el.setAttribute(mapped, rawValue);
+        return;
+      }
+      // 直接透传小写化的已知属性
+      if (/^(ToolTip|Tag|Name|Selected|SelectedIndex)$/.test(name)) return;
+      el.setAttribute(name.toLowerCase(), rawValue);
+    });
+
+    const decls = Object.keys(style)
+      .filter((k) => style[k])
+      .map((k) => k + ":" + style[k])
+      .join(";");
+    if (decls) {
+      const current = (el.getAttribute("style") || "").replace(/;\s*$/, "");
+      el.setAttribute("style", current ? current + ";" + decls : decls);
+    }
+
+    if (map.attrs) {
+      Object.keys(map.attrs).forEach((k) => el.setAttribute(k, map.attrs[k]));
+    }
+    if (map.bool) {
+      Object.keys(map.bool).forEach((k) => {
+        if (map.bool[k]) el.setAttribute(k, "");
+      });
+    }
+  }
+
+  function textStyle(el, node) {
+    const size = parseFloat(node.getAttribute("FontSize"));
+    const weight = node.getAttribute("FontWeight");
+    if (!Number.isNaN(size)) el.style.fontSize = size + "px";
+    if (weight === "SemiBold" || weight === "Bold") el.style.fontWeight = "600";
+    const cls = node.getAttribute("Style");
+    if (cls && /TitleTextBlockStyle/.test(cls)) el.classList.add("wui-title");
+    else if (cls && /SubtitleTextBlockStyle/.test(cls)) el.classList.add("wui-subtitle");
+    else if (cls && /BodyStrongTextBlockStyle/.test(cls)) el.classList.add("wui-body-strong");
+    else if (cls && /CaptionTextBlockStyle/.test(cls)) el.classList.add("wui-caption");
+  }
+
+  function convert(node, doc) {
+    if (node.nodeType === 3) return document.createTextNode(node.nodeValue);
+    if (node.nodeType !== 1) return null;
+
+    const tagName = node.nodeName;
+    if (/Definitions$/.test(tagName) || tagName === "Grid.RowDefinitions") return null;
+
+    const map = TAGS[tagName] || { tag: "div" };
+    let el;
+    if (map.tag === "option") {
+      el = document.createElement("option");
+      el.textContent = node.textContent.trim();
+      if (node.getAttribute("Content")) el.textContent = node.getAttribute("Content");
+      return el;
+    }
+    el = document.createElement(map.tag);
+    if (map.cls) el.className = map.cls;
+
+    applyAttrs(el, node, map);
+
+    if (map.tag === "div" && tagName === "StackPanel") {
+      const orientation = node.getAttribute("Orientation");
+      if (orientation === "Horizontal") el.classList.add("wui-stack--row");
+      else el.style.gap = el.style.gap || "8px";
+    }
+    if (map.tag === "div" && tagName === "TextBlock") {
+      textStyle(el, node);
+    }
+
+    // Content 属性作为文本
+    const content = resourceValue(node.getAttribute("Content"));
+    if (content) {
+      if (map.tag === "wui-button" || map.tag === "wui-tab") el.textContent = content;
+      else el.setAttribute("label", content);
+    }
+
+    // ToggleSwitch / CheckBox 的 Header 更适合作为行内标签
+    if (["wui-switch", "wui-checkbox", "wui-radio"].indexOf(map.tag) >= 0 && el.hasAttribute("header")) {
+      el.setAttribute("label", el.getAttribute("header"));
+      el.removeAttribute("header");
+    }
+
+    Array.prototype.forEach.call(node.childNodes, (child) => {
+      const converted = convert(child, doc);
+      if (converted) el.appendChild(converted);
+    });
+
+    if (tagName === "TextBlock" && !el.textContent.trim() && node.getAttribute("Text")) {
+      el.textContent = node.getAttribute("Text");
+    }
+    // TextBlock 的 Text 已作为文本内容，不再保留 value 属性
+    if (tagName === "TextBlock" || tagName === "RichTextBlock") el.removeAttribute("value");
+    return el;
+  }
+
+  /**
+   * 渲染 XAML 到容器
+   * @param {string} source
+   * @param {HTMLElement} container
+   * @returns {{ok:boolean,error?:string}}
+   */
+  WinUI.renderXAML = function (source, container) {
+    const xml = '<XamlRoot xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">' + source + "</XamlRoot>";
+    const doc = new DOMParser().parseFromString(xml, "application/xml");
+    const err = doc.querySelector("parsererror");
+    if (err) {
+      return { ok: false, error: err.textContent.replace(/\s+/g, " ").slice(0, 220) };
+    }
+    const root = doc.documentElement;
+    const frag = document.createDocumentFragment();
+    Array.prototype.forEach.call(root.childNodes, (child) => {
+      const node = convert(child, doc);
+      if (node) frag.appendChild(node);
+    });
+    container.innerHTML = "";
+    container.appendChild(frag);
+    return { ok: true };
+  };
+
+  /** 常用 XAML 示例 */
+  WinUI.xamlSample = `<StackPanel Spacing="12">
+  <TextBlock Text="欢迎使用 WinUI 3 for the Web" Style="{StaticResource TitleTextBlockStyle}" />
+  <TextBlock Text="下面这些控件由 XAML 实时渲染" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+  <StackPanel Orientation="Horizontal" Spacing="8">
+    <Button Content="标准按钮" />
+    <Button Content="强调按钮" Style="{StaticResource AccentButtonStyle}" />
+    <TextBox Header="用户名" PlaceholderText="请输入" Width="220" />
+    <ToggleSwitch Header="通知" IsChecked="True" />
+  </StackPanel>
+  <InfoBar Title="XAML 可用" Message="你也可以在示例页里直接编辑这段代码。" Severity="Success" IsClosable="True" />
+  <ProgressBar Value="62" />
+</StackPanel>`;
+})(window);

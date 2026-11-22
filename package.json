@@ -22,10 +22,13 @@
   ],
   "files": [
     "src",
+    "dist",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "build": "node build.mjs",
+    "build:raw": "node build.mjs --no-min",
     "start": "python -m http.server 8080",
     "serve": "python -m http.server 8080"
   }

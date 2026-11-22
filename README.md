@@ -1,6 +1,6 @@
 # WinUI 3 for the Web
 
-用 **纯 JavaScript + CSS** 还原 Windows 11 / WinUI 3 的控件外观、状态、主题与交互。零构建、零依赖、零框架 —— 引入 4 个样式文件与 6 个脚本，即可在浏览器里写出「Windows 11 原生应用」的界面。
+用 **纯 JavaScript + CSS** 还原 Windows 11 / WinUI 3 的控件外观、状态、主题与交互。零依赖、零框架、无需构建 —— 引入 4 个样式文件与 6 个脚本（或直接用打包好的 2 个文件），即可在浏览器里写出「Windows 11 原生应用」的界面。
 
 > 在线示例：<https://8888888b.github.io/winui3_web/>
 
@@ -17,9 +17,33 @@
 - **Fluent 焦点视觉**：双层描边，可区分键盘焦点与指针焦点（`data-focus-mode`）。
 - **完整浮层体系**：ContentDialog（返回 Promise）、Flyout、MenuFlyout、ToolTip、TeachingTip，含边界收敛、上下翻转、焦点陷阱、Esc / 点外关闭。
 - **XAML 渲染桥**：把 WinUI 3 的 XAML 片段（`<Button Content="…"/>`）直接渲染成真实控件。
-- **无构建**：原生 ES5+ 语法、Custom Elements，无打包器、无框架、无 polyfill。
+- **无构建**：源码即产物，原生 ES5+ 语法与 Custom Elements，无打包器、无框架、无 polyfill；`dist/` 只是把同一份源码拼成单文件，方便直接引 CDN。
 
 ## 快速开始
+
+### 方式一：单文件引入（推荐）
+
+每次发布都会把全部样式与脚本打成两个文件，挂在 [Releases](https://github.com/8888888b/winui3_web/releases) 上：
+
+```html
+<link rel="stylesheet" href="https://github.com/8888888b/winui3_web/releases/download/v1.0.0/winui3.min.css">
+<script src="https://github.com/8888888b/winui3_web/releases/download/v1.0.0/winui3.min.js" defer></script>
+```
+
+也可以走 CDN（jsDelivr，自动带 gzip 与长效缓存）：
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/8888888b/winui3_web@v1.0.0/dist/winui3.min.css">
+<script src="https://cdn.jsdelivr.net/gh/8888888b/winui3_web@v1.0.0/dist/winui3.min.js" defer></script>
+```
+
+| 文件 | 体积 | 说明 |
+| --- | --- | --- |
+| `winui3.min.css` | 59 KB | 设计令牌 + 全部控件样式（压缩） |
+| `winui3.min.js` | 115 KB | 全部 Web Components（压缩） |
+| `winui3.css` / `winui3.js` | 78 / 127 KB | 同内容未压缩版，便于调试 |
+
+### 方式二：按模块引入源码
 
 ```html
 <link rel="stylesheet" href="src/css/tokens.css">
@@ -34,6 +58,8 @@
 <script src="src/js/overlays.js"></script>
 <script src="src/js/xaml.js"></script>
 ```
+
+顺序有意义：`core.js` 必须最先（定义 `WinUI` 与组件基类），`popup.js` 先于 `overlays.js`。
 
 然后像写普通 HTML 一样使用控件：
 
@@ -136,6 +162,10 @@ WinUI.renderXAML(`
 ```
 .
 ├── index.html            # 全控件示例站（单页应用）
+├── build.mjs             # 打包脚本：拼单文件 + 保守压缩（零依赖）
+├── dist/                 # 构建产物（提交进仓库，同时作为 Release 附件）
+│   ├── winui3.css / winui3.js
+│   └── winui3.min.css / winui3.min.js
 ├── src/
 │   ├── css/
 │   │   ├── tokens.css    # 设计令牌：浅色 / 深色 / 高对比
@@ -151,6 +181,15 @@ WinUI.renderXAML(`
 │       └── xaml.js       # XAML → DOM 渲染桥
 └── docs/preview.png
 ```
+
+## 构建
+
+```bash
+npm run build      # 生成 dist/（含压缩版）
+npm run build:raw  # 只生成未压缩版
+```
+
+脚本本身零依赖：按固定顺序拼接 `src/css/*` 与 `src/js/*`，再做一次保守压缩 —— 保留换行以规避 ASI 陷阱，并逐字符识别字符串 / 模板串 / 正则字面量，确保多行模板与 `/[&<>"']/g` 这类正则不被误伤。
 
 ## 本地预览
 
