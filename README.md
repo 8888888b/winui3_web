@@ -3,6 +3,12 @@
 用 **纯 JavaScript + CSS** 还原 Windows 11 / WinUI 3 的控件外观、状态、主题与交互。零依赖、零框架、无需构建 —— 引入 4 个样式文件与 6 个脚本（或直接用打包好的 2 个文件），即可在浏览器里写出「Windows 11 原生应用」的界面。
 
 > 在线示例：<https://8888888b.github.io/winui3_web/>
+>
+> 最新版本：**v1.0.0** · [下载 winui3.min.css / winui3.min.js](https://github.com/8888888b/winui3_web/releases/latest)
+
+![release](https://img.shields.io/badge/release-v1.0.0-0067c0)
+![license](https://img.shields.io/badge/license-MIT-0067c0)
+![deps](https://img.shields.io/badge/dependencies-0-0067c0)
 
 ![预览](docs/preview.png)
 
@@ -23,14 +29,19 @@
 
 ### 方式一：单文件引入（推荐）
 
-每次发布都会把全部样式与脚本打成两个文件，挂在 [Releases](https://github.com/8888888b/winui3_web/releases) 上：
+每次发布都会把全部样式与脚本打成两个文件，挂在 [Releases](https://github.com/8888888b/winui3_web/releases) 上，也可以直接引用本站托管的同一份产物：
 
 ```html
+<!-- 版本化：从 Release 附件下载（可长期固定 v1.0.0） -->
 <link rel="stylesheet" href="https://github.com/8888888b/winui3_web/releases/download/v1.0.0/winui3.min.css">
 <script src="https://github.com/8888888b/winui3_web/releases/download/v1.0.0/winui3.min.js" defer></script>
+
+<!-- 或者：本站 Pages 托管的 dist（随 main 更新） -->
+<link rel="stylesheet" href="https://8888888b.github.io/winui3_web/dist/winui3.min.css">
+<script src="https://8888888b.github.io/winui3_web/dist/winui3.min.js" defer></script>
 ```
 
-也可以走 CDN（jsDelivr，自动带 gzip 与长效缓存）：
+第三方 CDN 亦可（jsDelivr 会按 tag 缓存，适合长期引用）：
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/8888888b/winui3_web@v1.0.0/dist/winui3.min.css">
