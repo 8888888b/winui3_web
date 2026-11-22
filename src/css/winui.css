@@ -1,0 +1,636 @@
+/*!
+ * WinUI 3 for the Web — Base / Shell
+ * 基础重置、排版、窗口外壳（标题栏 + Mica）、布局辅助、滚动条、焦点视觉。
+ */
+
+/* ==================================================================
+ * 1. 基础重置
+ * ================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--wui-font-family);
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-size: var(--wui-text-body);
+  line-height: var(--wui-text-body-lh);
+  font-weight: var(--wui-weight-regular);
+  color: var(--wui-text-primary);
+  background: var(--wui-bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+a {
+  color: var(--wui-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+::selection {
+  background: var(--wui-accent-tint-strong);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ==================================================================
+ * 2. 排版类（对应 WinUI TextBlock 样式）
+ * ================================================================== */
+.wui-caption {
+  font-size: var(--wui-text-caption);
+  line-height: var(--wui-text-caption-lh);
+  color: var(--wui-text-secondary);
+}
+
+.wui-body {
+  font-size: var(--wui-text-body);
+  line-height: var(--wui-text-body-lh);
+}
+
+.wui-body-strong {
+  font-size: var(--wui-text-body);
+  line-height: var(--wui-text-body-lh);
+  font-weight: var(--wui-weight-semibold);
+}
+
+.wui-body-large {
+  font-size: var(--wui-text-body-large);
+  line-height: var(--wui-text-body-large-lh);
+}
+
+.wui-subtitle {
+  font-family: var(--wui-font-display);
+  font-size: var(--wui-text-subtitle);
+  line-height: var(--wui-text-subtitle-lh);
+  font-weight: var(--wui-weight-semibold);
+}
+
+.wui-title {
+  font-family: var(--wui-font-display);
+  font-size: var(--wui-text-title);
+  line-height: var(--wui-text-title-lh);
+  font-weight: var(--wui-weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.wui-title-large {
+  font-family: var(--wui-font-display);
+  font-size: var(--wui-text-title-large);
+  line-height: var(--wui-text-title-large-lh);
+  font-weight: var(--wui-weight-semibold);
+  letter-spacing: -0.02em;
+}
+
+.wui-display {
+  font-family: var(--wui-font-display);
+  font-size: var(--wui-text-display);
+  line-height: var(--wui-text-display-lh);
+  font-weight: var(--wui-weight-semibold);
+  letter-spacing: -0.02em;
+}
+
+.wui-secondary {
+  color: var(--wui-text-secondary);
+}
+
+.wui-tertiary {
+  color: var(--wui-text-tertiary);
+}
+
+.wui-accent-text {
+  color: var(--wui-accent);
+}
+
+.wui-truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ==================================================================
+ * 3. 焦点视觉（Fluent 双层描边）
+ * ================================================================== */
+:focus {
+  outline: none;
+}
+
+.wui-focus-visible :focus-visible,
+:focus-visible.wui-focusable {
+  outline: 2px solid var(--wui-focus-outer);
+  outline-offset: 1px;
+  border-radius: inherit;
+}
+
+[data-focus-mode="keyboard"] :focus-visible {
+  outline: 2px solid var(--wui-focus-outer);
+  outline-offset: 1px;
+}
+
+/* ==================================================================
+ * 4. 图标
+ * ================================================================== */
+.wui-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: currentColor;
+  pointer-events: none;
+}
+
+.wui-icon > svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.wui-icon svg * {
+  vector-effect: non-scaling-stroke;
+}
+
+.wui-icon--sm {
+  width: 12px;
+  height: 12px;
+}
+
+.wui-icon--lg {
+  width: 20px;
+  height: 20px;
+}
+
+.wui-icon--xl {
+  width: 24px;
+  height: 24px;
+}
+
+.wui-icon--xxl {
+  width: 32px;
+  height: 32px;
+}
+
+/* ==================================================================
+ * 5. 滚动条（Fluent 细滚动条）
+ * ================================================================== */
+.wui-scroll {
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wui-stroke-strong) transparent;
+}
+
+.wui-scroll::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+.wui-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.wui-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--wui-stroke-strong);
+  border: 4px solid transparent;
+  border-radius: 8px;
+  background-clip: content-box;
+  min-height: 32px;
+}
+
+.wui-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--wui-text-tertiary);
+  border-width: 3px;
+}
+
+.wui-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ==================================================================
+ * 6. 窗口外壳
+ * ================================================================== */
+.wui-window {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--wui-bg-base);
+}
+
+.wui-window--rounded {
+  border-radius: var(--wui-radius-window);
+}
+
+/* 标题栏 */
+.wui-titlebar {
+  position: relative;
+  z-index: 20;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: var(--wui-titlebar-h);
+  padding-left: 12px;
+  padding-right: 0;
+  user-select: none;
+}
+
+.wui-titlebar__icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--wui-text-secondary);
+}
+
+.wui-titlebar__title {
+  font-size: var(--wui-text-caption);
+  line-height: var(--wui-text-caption-lh);
+  color: var(--wui-text-primary);
+  font-weight: var(--wui-weight-regular);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wui-titlebar__spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wui-titlebar__drag {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 窗口按钮 */
+.wui-caption-buttons {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.wui-caption-btn {
+  width: var(--wui-caption-w);
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--wui-text-primary);
+  cursor: default;
+  transition: background-color var(--wui-dur-fast) linear;
+}
+
+.wui-caption-btn:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-caption-btn:active {
+  background: var(--wui-control-fill-tertiary);
+}
+
+.wui-caption-btn--close:hover {
+  background: var(--wui-close-hover);
+  color: #fff;
+}
+
+.wui-caption-btn--close:active {
+  background: #b12a1c;
+  color: #fff;
+}
+
+.wui-caption-btn .wui-icon {
+  width: 10px;
+  height: 10px;
+}
+
+/* 内容区 */
+.wui-window__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ==================================================================
+ * 7. Mica / Acrylic 背景
+ * ================================================================== */
+.wui-mica {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--wui-mica-tint);
+  background-image:
+    radial-gradient(90% 70% at 8% -10%, var(--wui-mica-a) 0%, transparent 62%),
+    radial-gradient(70% 60% at 96% 4%, var(--wui-mica-b) 0%, transparent 60%),
+    radial-gradient(80% 70% at 55% 108%, var(--wui-mica-c) 0%, transparent 64%),
+    linear-gradient(180deg, var(--wui-mica-tint-alt), var(--wui-mica-tint));
+  background-repeat: no-repeat;
+}
+
+/* 标题栏叠在窗口 Mica 之上时保持透明 */
+.wui-titlebar--transparent {
+  background: transparent;
+}
+
+.wui-acrylic {
+  background-color: var(--wui-mica-tint);
+  -webkit-backdrop-filter: blur(30px) saturate(1.4);
+  backdrop-filter: blur(30px) saturate(1.4);
+}
+
+.wui-layer {
+  background: var(--wui-layer);
+}
+
+.wui-layer-alt {
+  background: var(--wui-layer-alt);
+}
+
+/* ==================================================================
+ * 8. 卡片 / 分组
+ * ================================================================== */
+.wui-card {
+  background: var(--wui-card-bg);
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-card);
+  padding: 16px;
+}
+
+.wui-card--interactive {
+  transition: background-color var(--wui-dur-fast) linear,
+    border-color var(--wui-dur-fast) linear;
+  cursor: default;
+}
+
+.wui-card--interactive:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-card--sm {
+  padding: 12px;
+}
+
+.wui-card--lg {
+  padding: 24px;
+}
+
+/* 设置卡片（SettingsCard，WinUI 3 1.5+） */
+.wui-settings-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 68px;
+  padding: 12px 16px;
+  background: var(--wui-card-bg);
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-card);
+}
+
+.wui-settings-card__icon {
+  width: 20px;
+  height: 20px;
+  color: var(--wui-text-secondary);
+  flex: 0 0 auto;
+}
+
+.wui-settings-card__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wui-settings-card__title {
+  font-size: var(--wui-text-body);
+  line-height: var(--wui-text-body-lh);
+  color: var(--wui-text-primary);
+}
+
+.wui-settings-card__desc {
+  font-size: var(--wui-text-caption);
+  line-height: var(--wui-text-caption-lh);
+  color: var(--wui-text-secondary);
+}
+
+.wui-settings-card__action {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==================================================================
+ * 9. 布局辅助（对应 XAML StackPanel / Grid）
+ * ================================================================== */
+.wui-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.wui-stack--row {
+  flex-direction: row;
+}
+
+.wui-stack--wrap {
+  flex-wrap: wrap;
+}
+
+.wui-stack--gap-4 {
+  gap: 4px;
+}
+.wui-stack--gap-8 {
+  gap: 8px;
+}
+.wui-stack--gap-12 {
+  gap: 12px;
+}
+.wui-stack--gap-16 {
+  gap: 16px;
+}
+.wui-stack--gap-24 {
+  gap: 24px;
+}
+
+.wui-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.wui-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wui-spacer {
+  flex: 1 1 auto;
+}
+
+.wui-divider {
+  height: 1px;
+  background: var(--wui-divider);
+  border: 0;
+  margin: 0;
+}
+
+.wui-divider--vertical {
+  width: 1px;
+  height: auto;
+  align-self: stretch;
+}
+
+/* ==================================================================
+ * 10. 页面骨架（Demo / App 通用）
+ * ================================================================== */
+.wui-page {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: auto;
+  padding: 24px 32px 48px;
+}
+
+.wui-page__header {
+  margin-bottom: 24px;
+}
+
+.wui-page__title {
+  font-family: var(--wui-font-display);
+  font-size: var(--wui-text-title);
+  line-height: var(--wui-text-title-lh);
+  font-weight: var(--wui-weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.wui-page__subtitle {
+  margin-top: 4px;
+  font-size: var(--wui-text-body);
+  line-height: var(--wui-text-body-lh);
+  color: var(--wui-text-secondary);
+}
+
+.wui-section {
+  margin-bottom: 32px;
+}
+
+.wui-section__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: var(--wui-text-body-large);
+  line-height: var(--wui-text-body-large-lh);
+  font-weight: var(--wui-weight-semibold);
+}
+
+.wui-section__hint {
+  margin: -4px 0 12px;
+  font-size: var(--wui-text-caption);
+  color: var(--wui-text-secondary);
+}
+
+.wui-example {
+  padding: 20px;
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-overlay);
+  background: var(--wui-card-bg-secondary);
+}
+
+.wui-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.wui-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: var(--wui-text-body);
+  line-height: var(--wui-text-body-lh);
+  color: var(--wui-text-primary);
+}
+
+.wui-code {
+  font-family: var(--wui-font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--wui-control-fill-tertiary);
+  border: 1px solid var(--wui-card-stroke);
+  color: var(--wui-text-secondary);
+}
+
+/* 减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

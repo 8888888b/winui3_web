@@ -1,0 +1,32 @@
+{
+  "name": "winui3-web",
+  "version": "1.0.0",
+  "description": "用纯 JavaScript 与 CSS 还原 Windows 11 / WinUI 3 的控件、主题、材质与交互",
+  "license": "MIT",
+  "author": "8888888b",
+  "homepage": "https://8888888b.github.io/winui3_web/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/8888888b/winui3_web.git"
+  },
+  "keywords": [
+    "winui",
+    "winui3",
+    "fluent",
+    "windows11",
+    "design-system",
+    "web-components",
+    "custom-elements",
+    "css",
+    "ui"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "python -m http.server 8080",
+    "serve": "python -m http.server 8080"
+  }
+}

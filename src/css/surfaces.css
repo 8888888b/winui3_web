@@ -1,0 +1,1245 @@
+/*!
+ * WinUI 3 for the Web — Surfaces（导航 / 集合 / 浮层）
+ */
+
+/* ==================================================================
+ * NavigationView
+ * ================================================================== */
+.wui-nav {
+  display: flex;
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+}
+
+.wui-nav__pane {
+  flex: 0 0 auto;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  padding: 0 4px 8px;
+  overflow: hidden;
+  transition: width var(--wui-dur-normal) var(--wui-ease-standard),
+    transform var(--wui-dur-normal) var(--wui-ease-standard);
+}
+
+.wui-nav__top {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 4px 0 8px;
+}
+
+.wui-nav__hamburger {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-primary);
+  display: grid;
+  place-items: center;
+  cursor: default;
+}
+
+.wui-nav__hamburger:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-nav__hamburger:active {
+  background: var(--wui-control-fill-tertiary);
+}
+
+.wui-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.wui-nav__brand-text {
+  font-size: var(--wui-text-body);
+  line-height: 20px;
+  color: var(--wui-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wui-nav__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 0;
+}
+
+.wui-nav__group-header {
+  padding: 8px 12px 4px;
+  font-size: var(--wui-text-caption);
+  line-height: var(--wui-text-caption-lh);
+  color: var(--wui-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wui-nav__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 36px;
+  margin: 2px 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-primary);
+  font-size: var(--wui-text-body);
+  line-height: 20px;
+  text-align: left;
+  cursor: default;
+  overflow: hidden;
+  transition: background-color var(--wui-dur-fast) linear;
+  width: 100%;
+}
+
+.wui-nav__item .wui-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--wui-text-primary);
+}
+
+.wui-nav__item-text {
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wui-nav__item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color var(--wui-dur-fast) linear;
+}
+
+.wui-nav__item:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-nav__item:active {
+  background: var(--wui-control-fill-tertiary);
+  color: var(--wui-text-secondary);
+}
+
+.wui-nav__item[aria-current="page"] {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-nav__item[aria-current="page"]::before {
+  background: var(--wui-accent);
+}
+
+.wui-nav__item[aria-current="page"]:hover {
+  background: var(--wui-control-fill-tertiary);
+}
+
+.wui-nav__item .wui-badge,
+.wui-nav__item .wui-badge--dot {
+  flex: 0 0 auto;
+}
+
+.wui-nav__footer {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding: 8px 0 2px;
+  border-top: 1px solid var(--wui-divider);
+}
+
+.wui-nav__content {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wui-nav__header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 52px;
+  padding: 0 20px;
+  min-width: 0;
+}
+
+.wui-nav__header-title {
+  font-size: var(--wui-text-body-large);
+  line-height: 24px;
+  font-weight: var(--wui-weight-semibold);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 紧凑模式（仅图标） */
+.wui-nav[data-pane-mode="compact"] .wui-nav__pane {
+  width: 48px;
+  padding: 0 4px 8px;
+}
+
+.wui-nav[data-pane-mode="compact"] .wui-nav__item {
+  justify-content: center;
+  padding: 0;
+  gap: 0;
+}
+
+.wui-nav[data-pane-mode="compact"] .wui-nav__item-text,
+.wui-nav[data-pane-mode="compact"] .wui-nav__item .wui-badge,
+.wui-nav[data-pane-mode="compact"] .wui-nav__group-header,
+.wui-nav[data-pane-mode="compact"] .wui-nav__brand-text,
+.wui-nav[data-pane-mode="compact"] .wui-nav__item .wui-btn__chevron {
+  display: none;
+}
+
+.wui-nav[data-pane-mode="compact"] .wui-nav__top {
+  justify-content: center;
+  padding: 0;
+}
+
+/* 最小模式（浮层） */
+.wui-nav[data-pane-mode="minimal"] .wui-nav__pane {
+  position: absolute;
+  z-index: 40;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 280px;
+  background: var(--wui-bg-tertiary);
+  box-shadow: var(--wui-shadow-16);
+  transform: translateX(-100%);
+}
+
+.wui-nav[data-pane-mode="minimal"][data-pane-open="true"] .wui-nav__pane {
+  transform: translateX(0);
+}
+
+.wui-nav__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--wui-dur-normal) linear;
+}
+
+.wui-nav[data-pane-mode="minimal"][data-pane-open="true"] .wui-nav__scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ==================================================================
+ * TabView
+ * ================================================================== */
+.wui-tabview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.wui-tabview__strip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  height: 40px;
+  padding-left: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.wui-tabview__strip::-webkit-scrollbar {
+  display: none;
+}
+
+.wui-tab {
+  position: relative;
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 100px;
+  max-width: 220px;
+  height: 32px;
+  padding: 0 4px 0 12px;
+  border: 0;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--wui-text-secondary);
+  font-size: var(--wui-text-body);
+  cursor: default;
+  transition: background-color var(--wui-dur-fast) linear, color var(--wui-dur-fast) linear;
+}
+
+.wui-tab:hover {
+  background: var(--wui-control-fill-secondary);
+  color: var(--wui-text-primary);
+}
+
+.wui-tab[aria-selected="true"] {
+  background: var(--wui-card-bg);
+  color: var(--wui-text-primary);
+}
+
+.wui-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 1px 1px 0 0;
+  background: var(--wui-accent);
+}
+
+.wui-tab__icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.wui-tab__text {
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.wui-tab__close {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-secondary);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  cursor: default;
+  transition: opacity var(--wui-dur-fast) linear, background-color var(--wui-dur-fast) linear;
+}
+
+.wui-tab:hover .wui-tab__close,
+.wui-tab[aria-selected="true"] .wui-tab__close {
+  opacity: 1;
+}
+
+.wui-tab__close:hover {
+  background: var(--wui-control-fill-tertiary);
+  color: var(--wui-text-primary);
+}
+
+.wui-tab__close .wui-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.wui-tabview__add {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  margin: 0 4px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: default;
+}
+
+.wui-tabview__add:hover {
+  background: var(--wui-control-fill-secondary);
+  color: var(--wui-text-primary);
+}
+
+.wui-tabview__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.wui-tabview__page {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  display: none;
+}
+
+.wui-tabview__page[data-active="true"] {
+  display: block;
+  animation: wui-fade-in var(--wui-dur-normal) var(--wui-ease-standard);
+}
+
+/* ==================================================================
+ * ListView / GridView
+ * ================================================================== */
+.wui-listview {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--wui-radius-overlay);
+  overflow-y: auto;
+}
+
+.wui-listview--bordered {
+  border: 1px solid var(--wui-card-stroke);
+  background: var(--wui-card-bg-secondary);
+}
+
+.wui-list-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-primary);
+  text-align: left;
+  font-size: var(--wui-text-body);
+  cursor: default;
+  transition: background-color var(--wui-dur-fast) linear;
+}
+
+.wui-list-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 2px;
+  background: transparent;
+}
+
+.wui-list-item:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-list-item[aria-selected="true"] {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-list-item[aria-selected="true"]::before {
+  background: var(--wui-accent);
+}
+
+.wui-list-item__icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: var(--wui-text-secondary);
+}
+
+.wui-list-item__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.wui-list-item__title {
+  font-size: var(--wui-text-body);
+  line-height: 20px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wui-list-item__subtitle {
+  font-size: var(--wui-text-caption);
+  line-height: 16px;
+  color: var(--wui-text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wui-list-item__meta {
+  flex: 0 0 auto;
+  font-size: var(--wui-text-caption);
+  color: var(--wui-text-secondary);
+}
+
+/* GridView */
+.wui-gridview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  padding: 4px;
+}
+
+.wui-grid-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 2px;
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-control);
+  background: var(--wui-card-bg);
+  color: var(--wui-text-primary);
+  font-size: var(--wui-text-body);
+  text-align: left;
+  cursor: default;
+  overflow: hidden;
+  transition: background-color var(--wui-dur-fast) linear, border-color var(--wui-dur-fast) linear;
+}
+
+.wui-grid-item:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-grid-item[aria-selected="true"] {
+  border-color: var(--wui-accent);
+  background: var(--wui-accent-tint);
+}
+
+.wui-grid-item__media {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  color: var(--wui-accent);
+}
+
+.wui-grid-item__title {
+  font-weight: var(--wui-weight-semibold);
+}
+
+/* ==================================================================
+ * TreeView
+ * ================================================================== */
+.wui-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+}
+
+.wui-tree__node {
+  display: flex;
+  flex-direction: column;
+}
+
+.wui-tree__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-primary);
+  font-size: var(--wui-text-body);
+  text-align: left;
+  cursor: default;
+}
+
+.wui-tree__row:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-tree__row[aria-selected="true"] {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-tree__chevron {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--wui-text-secondary);
+  transition: transform var(--wui-dur-fast) var(--wui-ease-standard);
+}
+
+.wui-tree__node[data-expanded="true"] > .wui-tree__row .wui-tree__chevron {
+  transform: rotate(90deg);
+}
+
+.wui-tree__node[data-has-children="false"] .wui-tree__chevron {
+  opacity: 0;
+}
+
+.wui-tree__children {
+  display: none;
+  padding-left: 20px;
+}
+
+.wui-tree__node[data-expanded="true"] > .wui-tree__children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wui-tree__icon {
+  width: 16px;
+  height: 16px;
+  color: var(--wui-text-secondary);
+}
+
+/* ==================================================================
+ * Expander
+ * ================================================================== */
+.wui-expander {
+  display: block;
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-control);
+  background: var(--wui-card-bg);
+  overflow: hidden;
+}
+
+.wui-expander__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--wui-text-primary);
+  font-size: var(--wui-text-body);
+  text-align: left;
+  cursor: default;
+}
+
+.wui-expander__header:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-expander__chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--wui-text-secondary);
+  transition: transform var(--wui-dur-normal) var(--wui-ease-standard);
+}
+
+.wui-expander[data-expanded="true"] .wui-expander__chevron {
+  transform: rotate(90deg);
+}
+
+.wui-expander__label {
+  flex: 1 1 auto;
+  font-weight: var(--wui-weight-semibold);
+}
+
+.wui-expander__content {
+  display: none;
+  padding: 0 16px 16px;
+  color: var(--wui-text-secondary);
+  animation: wui-fade-in var(--wui-dur-normal) var(--wui-ease-standard);
+}
+
+.wui-expander[data-expanded="true"] .wui-expander__content {
+  display: block;
+}
+
+/* ==================================================================
+ * CommandBar
+ * ================================================================== */
+.wui-commandbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 48px;
+  padding: 4px 8px;
+  background: var(--wui-card-bg);
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-control);
+}
+
+.wui-commandbar__separator {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--wui-divider);
+}
+
+/* ==================================================================
+ * BreadcrumbBar
+ * ================================================================== */
+.wui-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  min-height: 32px;
+}
+
+.wui-breadcrumb__item {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-secondary);
+  font-size: var(--wui-text-body);
+  cursor: default;
+}
+
+.wui-breadcrumb__item:hover {
+  background: var(--wui-control-fill-secondary);
+  color: var(--wui-text-primary);
+}
+
+.wui-breadcrumb__item[aria-current="page"] {
+  color: var(--wui-text-primary);
+  font-weight: var(--wui-weight-semibold);
+}
+
+.wui-breadcrumb__sep {
+  width: 12px;
+  height: 12px;
+  color: var(--wui-text-tertiary);
+}
+
+/* ==================================================================
+ * PipsPager
+ * ================================================================== */
+.wui-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wui-pips__pip {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  padding: 0;
+  border-radius: var(--wui-radius-full);
+  background: var(--wui-stroke-strong);
+  cursor: default;
+  transition: background-color var(--wui-dur-fast) linear, width var(--wui-dur-fast) var(--wui-ease-standard);
+}
+
+.wui-pips__pip:hover {
+  background: var(--wui-text-secondary);
+}
+
+.wui-pips__pip[aria-current="true"] {
+  width: 16px;
+  background: var(--wui-accent);
+}
+
+/* ==================================================================
+ * PersonPicture
+ * ================================================================== */
+.wui-person {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--wui-accent);
+  color: var(--wui-accent-text);
+  font-size: var(--wui-text-caption);
+  font-weight: var(--wui-weight-semibold);
+  flex: 0 0 auto;
+  overflow: visible;
+  user-select: none;
+}
+
+.wui-person > img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.wui-person--sm {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+
+.wui-person--lg {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+}
+
+.wui-person--xl {
+  width: 64px;
+  height: 64px;
+  font-size: 20px;
+}
+
+.wui-person__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--wui-bg-base);
+  background: var(--wui-success);
+}
+
+/* ==================================================================
+ * CalendarView / DatePicker
+ * ================================================================== */
+.wui-calendar {
+  display: block;
+  width: 300px;
+  padding: 12px;
+  background: var(--wui-bg-quarternary);
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-overlay);
+  box-shadow: var(--wui-shadow-16);
+  user-select: none;
+}
+
+.wui-calendar__header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.wui-calendar__title {
+  flex: 1 1 auto;
+  padding-left: 4px;
+  font-size: var(--wui-text-body);
+  font-weight: var(--wui-weight-semibold);
+}
+
+.wui-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.wui-calendar__dow {
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: var(--wui-text-caption);
+  color: var(--wui-text-secondary);
+}
+
+.wui-calendar__day {
+  position: relative;
+  height: 36px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-primary);
+  font-size: var(--wui-text-caption);
+  cursor: default;
+  display: grid;
+  place-items: center;
+}
+
+.wui-calendar__day:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-calendar__day--outside {
+  color: var(--wui-text-disabled);
+}
+
+.wui-calendar__day--today {
+  border: 1px solid var(--wui-stroke-strong);
+  font-weight: var(--wui-weight-semibold);
+}
+
+.wui-calendar__day--selected {
+  background: var(--wui-accent);
+  color: var(--wui-accent-text);
+  font-weight: var(--wui-weight-semibold);
+}
+
+.wui-calendar__day--selected:hover {
+  background: var(--wui-accent-hover);
+}
+
+.wui-datepicker {
+  display: inline-flex;
+  align-items: stretch;
+  min-height: var(--wui-control-h);
+  background: var(--wui-control-fill);
+  border: 1px solid var(--wui-stroke-input);
+  border-bottom-color: var(--wui-stroke-secondary);
+  border-radius: var(--wui-radius-control);
+}
+
+.wui-datepicker__segment {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 12px;
+  border: 0;
+  border-right: 1px solid var(--wui-stroke-input);
+  background: transparent;
+  color: var(--wui-text-primary);
+  font-size: var(--wui-text-body);
+  cursor: default;
+}
+
+.wui-datepicker__segment:last-child {
+  border-right: 0;
+}
+
+.wui-datepicker__segment:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-datepicker__segment .wui-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--wui-text-secondary);
+}
+
+/* ==================================================================
+ * 浮层通用
+ * ================================================================== */
+.wui-layer-host {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.wui-layer-host > * {
+  pointer-events: auto;
+}
+
+/* Flyout */
+.wui-flyout {
+  position: fixed;
+  z-index: 120;
+  min-width: 120px;
+  max-width: min(420px, calc(100vw - 24px));
+  padding: 12px;
+  background: var(--wui-bg-quarternary);
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-overlay);
+  box-shadow: var(--wui-shadow-16);
+  animation: wui-flyout-in var(--wui-dur-fast) var(--wui-ease-standard);
+}
+
+/* 菜单 */
+.wui-menu {
+  min-width: 140px;
+  max-width: 340px;
+  padding: 4px;
+}
+
+.wui-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--wui-radius-control);
+  background: transparent;
+  color: var(--wui-text-primary);
+  font-size: var(--wui-text-body);
+  text-align: left;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.wui-menu__item:hover {
+  background: var(--wui-control-fill-secondary);
+}
+
+.wui-menu__item:active {
+  background: var(--wui-control-fill-tertiary);
+  color: var(--wui-text-secondary);
+}
+
+.wui-menu__item:disabled {
+  color: var(--wui-text-disabled);
+  pointer-events: none;
+}
+
+.wui-menu__item .wui-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--wui-text-secondary);
+}
+
+.wui-menu__item[aria-checked="true"] .wui-menu__check {
+  opacity: 1;
+}
+
+.wui-menu__check {
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  color: var(--wui-accent);
+}
+
+.wui-menu__accel {
+  margin-left: auto;
+  padding-left: 24px;
+  font-size: var(--wui-text-caption);
+  color: var(--wui-text-tertiary);
+}
+
+.wui-menu__separator {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--wui-divider);
+}
+
+.wui-menu__submenu-arrow {
+  margin-left: auto;
+  width: 12px;
+  height: 12px;
+  color: var(--wui-text-tertiary);
+}
+
+/* ToolTip */
+.wui-tooltip {
+  position: fixed;
+  z-index: 200;
+  max-width: 320px;
+  padding: 6px 9px;
+  background: var(--wui-bg-quarternary);
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-control);
+  box-shadow: var(--wui-shadow-8);
+  color: var(--wui-text-primary);
+  font-size: var(--wui-text-caption);
+  line-height: var(--wui-text-caption-lh);
+  pointer-events: none;
+  animation: wui-fade-in var(--wui-dur-fast) linear;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+/* ContentDialog */
+.wui-smoke {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.3);
+  animation: wui-fade-in var(--wui-dur-fast) linear;
+}
+
+.wui-dialog {
+  width: min(548px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--wui-bg-tertiary);
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-overlay);
+  box-shadow: var(--wui-shadow-64);
+  animation: wui-dialog-in var(--wui-dur-normal) var(--wui-ease-decel);
+}
+
+.wui-dialog__title {
+  font-family: var(--wui-font-display);
+  font-size: var(--wui-text-subtitle);
+  line-height: var(--wui-text-subtitle-lh);
+  font-weight: var(--wui-weight-semibold);
+  margin-bottom: 12px;
+}
+
+.wui-dialog__body {
+  flex: 1 1 auto;
+  overflow: auto;
+  font-size: var(--wui-text-body);
+  line-height: 20px;
+  color: var(--wui-text-primary);
+  margin-bottom: 24px;
+}
+
+.wui-dialog__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.wui-dialog__actions .wui-btn {
+  min-width: 128px;
+}
+
+.wui-dialog--wide {
+  width: min(760px, 100%);
+}
+
+/* TeachingTip */
+.wui-teaching-tip {
+  position: fixed;
+  z-index: 160;
+  width: min(320px, calc(100vw - 24px));
+  padding: 16px;
+  background: var(--wui-bg-quarternary);
+  border: 1px solid var(--wui-card-stroke);
+  border-radius: var(--wui-radius-overlay);
+  box-shadow: var(--wui-shadow-28);
+  animation: wui-flyout-in var(--wui-dur-normal) var(--wui-ease-decel);
+}
+
+.wui-teaching-tip__arrow {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--wui-bg-quarternary);
+  border: 1px solid var(--wui-card-stroke);
+  transform: rotate(45deg);
+}
+
+.wui-teaching-tip__title {
+  font-size: var(--wui-text-body);
+  font-weight: var(--wui-weight-semibold);
+  margin-bottom: 4px;
+}
+
+.wui-teaching-tip__body {
+  font-size: var(--wui-text-caption);
+  line-height: var(--wui-text-caption-lh);
+  color: var(--wui-text-secondary);
+  margin-bottom: 12px;
+}
+
+.wui-teaching-tip__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ==================================================================
+ * 其他
+ * ================================================================== */
+.wui-link {
+  color: var(--wui-accent);
+  text-decoration: none;
+  cursor: default;
+}
+
+.wui-link:hover {
+  text-decoration: underline;
+}
+
+.wui-scrollbox {
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.wui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px;
+  color: var(--wui-text-secondary);
+  font-size: var(--wui-text-body);
+  text-align: center;
+}
+
+.wui-empty .wui-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--wui-text-tertiary);
+}
+
+.wui-segmented {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  background: var(--wui-control-fill-secondary);
+  border-radius: var(--wui-radius-control);
+}
+
+.wui-segmented__btn {
+  border: 0;
+  background: transparent;
+  color: var(--wui-text-secondary);
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 3px;
+  font-size: var(--wui-text-caption);
+  cursor: default;
+}
+
+.wui-segmented__btn[aria-selected="true"] {
+  background: var(--wui-bg-quarternary);
+  color: var(--wui-text-primary);
+  box-shadow: var(--wui-shadow-2);
+}
+
+.wui-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@keyframes wui-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes wui-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WinUI 3 for the Web — 全控件示例</title>
+<meta name="description" content="用纯 JavaScript 与 CSS 还原 Windows 11 / WinUI 3 的控件、主题、材质与交互。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230078d4'/%3E%3Cpath d='M8 11h7v5H8zM17 11h7v5h-7zM8 18h7v5H8zM17 18h7v5h-7z' fill='%23fff' opacity='.95'/%3E%3C/svg%3E">
+<script>
+  /* 预置主题，避免首屏闪烁；?theme=dark|light 可强制 */
+  (function () {
+    try {
+      var q = new URLSearchParams(location.search).get('theme');
+      if (q) document.documentElement.setAttribute('data-theme-mode', q);
+      var mode = q || localStorage.getItem('winui.theme') || 'system';
+      var dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    } catch (e) {}
+  })();
+</script>
+<link rel="stylesheet" href="src/css/tokens.css">
+<link rel="stylesheet" href="src/css/winui.css">
+<link rel="stylesheet" href="src/css/controls.css">
+<link rel="stylesheet" href="src/css/surfaces.css">
+<style>
+  /* ================= 桌面与窗口 ================= */
+  html, body { height: 100%; }
+  body {
+    background: #dfe7f5;
+    overflow: hidden;
+  }
+  .demo-desktop {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    background:
+      radial-gradient(70% 90% at 8% 4%, #cfe0ff 0%, transparent 58%),
+      radial-gradient(60% 80% at 96% 10%, #ffdfe9 0%, transparent 55%),
+      radial-gradient(80% 80% at 50% 110%, #d9f0ff 0%, transparent 60%),
+      linear-gradient(150deg, #eef3fc 0%, #e3eaf8 55%, #dfe7f5 100%);
+    transition: background 400ms ease;
+  }
+  [data-theme="dark"] .demo-desktop {
+    background:
+      radial-gradient(70% 90% at 8% 4%, #1b2c4d 0%, transparent 58%),
+      radial-gradient(60% 80% at 96% 10%, #3a2038 0%, transparent 55%),
+      radial-gradient(80% 80% at 50% 110%, #10283c 0%, transparent 60%),
+      linear-gradient(150deg, #12161f 0%, #101319 55%, #0c0f14 100%);
+  }
+  [data-theme="high-contrast"] .demo-desktop { background: #000; }
+
+  #app {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+    max-width: 1480px;
+    max-height: 940px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(9, 20, 45, 0.32), 0 2px 8px rgba(9, 20, 45, 0.16),
+      0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    transition: max-width 220ms cubic-bezier(0, 0, 0, 1), max-height 220ms cubic-bezier(0, 0, 0, 1),
+      border-radius 220ms cubic-bezier(0, 0, 0, 1);
+  }
+  [data-theme="dark"] #app { box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.08) inset; }
+  #app.is-max { max-width: none; max-height: none; border-radius: 0; }
+  .demo-desktop:has(#app.is-max) { padding: 0; }
+
+  .wui-titlebar { padding-right: 0; }
+  .demo-title-lead { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  .demo-title-sub { font-size: 12px; color: var(--wui-text-tertiary); }
+
+  .demo-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .demo-actions .wui-segmented__btn { height: 26px; }
+
+  /* ================= 页面通用 ================= */
+  .wui-page { padding: 20px 28px 56px; }
+  .wui-page__header { margin-bottom: 20px; }
+  .demo-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 4px 0 8px;
+    max-width: 760px;
+  }
+  .demo-hero__tile {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    color: var(--wui-text-on-accent);
+    background: linear-gradient(140deg, var(--wui-accent), var(--wui-accent-pressed));
+    box-shadow: 0 10px 24px rgba(0, 90, 190, 0.28);
+  }
+  .demo-hero__tile .wui-icon { width: 30px; height: 30px; }
+  .demo-hero h1 {
+    font-family: var(--wui-font-display);
+    font-size: 40px;
+    line-height: 50px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .demo-hero h1 em {
+    font-style: normal;
+    background: linear-gradient(100deg, var(--wui-accent), #8b5cf6 70%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .demo-hero p { max-width: 640px; }
+  /* 高对比度下取消渐变文字，保证可读性 */
+  [data-theme="high-contrast"] .demo-hero h1 em {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: inherit;
+  }
+  [data-theme="high-contrast"] .demo-hero__tile {
+    box-shadow: none;
+    border: 1px solid var(--wui-text-primary);
+  }
+
+  .demo-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 20px 0 8px;
+  }
+  .demo-kpi {
+    padding: 14px 16px;
+    border: 1px solid var(--wui-card-stroke);
+    border-radius: 6px;
+    background: var(--wui-card-bg);
+  }
+  .demo-kpi__value { font-family: var(--wui-font-display); font-size: 26px; line-height: 32px; font-weight: 600; }
+  .demo-kpi__label { margin-top: 2px; font-size: 12px; color: var(--wui-text-secondary); }
+
+  .demo-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .demo-feature {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid var(--wui-card-stroke);
+    border-radius: 6px;
+    background: var(--wui-card-bg);
+    transition: background-color 150ms linear;
+  }
+  .demo-feature:hover { background: var(--wui-control-fill-secondary); }
+  .demo-feature__icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: var(--wui-accent);
+    background: var(--wui-accent-tint);
+    margin-bottom: 2px;
+  }
+  .demo-feature h3 { font-size: 14px; font-weight: 600; }
+  .demo-feature p { font-size: 12px; line-height: 18px; color: var(--wui-text-secondary); }
+
+  .demo-snippet {
+    margin: 10px 0 0;
+    padding: 12px 14px;
+    font-family: var(--wui-font-mono);
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--wui-text-secondary);
+    background: var(--wui-control-fill-tertiary);
+    border: 1px solid var(--wui-card-stroke);
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .demo-snippet b { color: var(--wui-accent); font-weight: 600; }
+  .demo-snippet i { color: var(--wui-text-tertiary); font-style: normal; }
+
+  .demo-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .demo-field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px 20px;
+    align-items: start;
+  }
+  .demo-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+  .demo-swatch {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--wui-stroke-secondary);
+    border-radius: 6px;
+    cursor: default;
+    position: relative;
+    transition: transform 120ms cubic-bezier(0, 0, 0, 1);
+  }
+  .demo-swatch:hover { transform: scale(1.08); }
+  .demo-swatch[aria-pressed="true"]::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 9px;
+    box-shadow: 0 0 0 2px var(--wui-bg-base), 0 0 0 3.5px var(--wui-accent);
+    pointer-events: none;
+  }
+  .demo-surface {
+    height: 86px;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    border: 1px solid var(--wui-card-stroke);
+    font-size: 12px;
+    color: var(--wui-text-secondary);
+  }
+  .demo-type-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--wui-divider);
+  }
+  .demo-type-row span:last-child {
+    font-family: var(--wui-font-mono);
+    font-size: 11px;
+    color: var(--wui-text-tertiary);
+    white-space: nowrap;
+  }
+  .demo-window-preview {
+    border: 1px solid var(--wui-card-stroke);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--wui-bg-base);
+    box-shadow: var(--wui-shadow-16);
+  }
+  .demo-window-preview .wui-titlebar { height: 34px; }
+  .demo-editor {
+    width: 100%;
+    height: 300px;
+    padding: 12px 14px;
+    resize: vertical;
+    border: 1px solid var(--wui-stroke-input);
+    border-bottom-color: var(--wui-stroke-secondary);
+    border-radius: 4px;
+    background: var(--wui-control-fill);
+    color: var(--wui-text-primary);
+    font-family: var(--wui-font-mono);
+    font-size: 12px;
+    line-height: 20px;
+    outline: none;
+  }
+  .demo-editor:focus { background: var(--wui-control-fill-input-active); }
+  .demo-xaml-out {
+    min-height: 300px;
+    padding: 20px;
+    border: 1px dashed var(--wui-stroke-secondary);
+    border-radius: 8px;
+    background: var(--wui-card-bg-secondary);
+  }
+  .demo-error {
+    margin-top: 8px;
+    font-family: var(--wui-font-mono);
+    font-size: 12px;
+    color: var(--wui-critical);
+    white-space: pre-wrap;
+  }
+  .demo-status { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .demo-inline-note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border-radius: 6px;
+    background: var(--wui-accent-tint);
+    color: var(--wui-text-primary);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  .demo-inline-note .wui-icon { color: var(--wui-accent); margin-top: 2px; }
+  .demo-list-panel { max-width: 360px; }
+  hr.demo-sep { height: 1px; border: 0; background: var(--wui-divider); margin: 24px 0; }
+</style>
+</head>
+<body>
+<div class="demo-desktop">
+  <div class="wui-window wui-mica" id="app">
+    <!-- ============ 标题栏 ============ -->
+    <div class="wui-titlebar wui-titlebar--transparent">
+      <div class="wui-titlebar__drag">
+        <span class="wui-titlebar__icon" data-icon="window"></span>
+        <div class="demo-title-lead">
+          <span class="wui-titlebar__title">WinUI 3 for the Web</span>
+          <span class="demo-title-sub">全控件示例</span>
+        </div>
+      </div>
+      <div class="wui-caption-buttons">
+        <button class="wui-caption-btn" data-icon="minimize" aria-label="最小化" title="最小化"></button>
+        <button class="wui-caption-btn" id="btn-max" data-icon="maximize" aria-label="最大化" title="最大化"></button>
+        <button class="wui-caption-btn wui-caption-btn--close" id="btn-close" data-icon="close" aria-label="关闭" title="关闭"></button>
+      </div>
+    </div>
+
+    <!-- ============ 主体 ============ -->
+    <div class="wui-window__body">
+      <wui-nav-view id="nav" brand="WinUI 3" icon="window">
+        <div slot="header" class="demo-actions">
+          <div class="wui-segmented" id="theme-seg" role="group" aria-label="主题">
+            <button class="wui-segmented__btn" data-theme-set="light" aria-selected="false">浅色</button>
+            <button class="wui-segmented__btn" data-theme-set="dark" aria-selected="false">深色</button>
+            <button class="wui-segmented__btn" data-theme-set="system" aria-selected="true">跟随系统</button>
+          </div>
+          <wui-button id="accent-btn" variant="subtle" icon="palette" aria-label="强调色" tooltip="强调色"></wui-button>
+          <wui-button id="github-btn" variant="subtle" icon="external" aria-label="GitHub" tooltip="在 GitHub 上查看源码"></wui-button>
+        </div>
+
+        <wui-nav-group header="开始">
+          <wui-nav-item icon="home" page="overview" selected>概览</wui-nav-item>
+          <wui-nav-item icon="palette" page="theming">主题与材质</wui-nav-item>
+          <wui-nav-item icon="window" page="shell">窗口与外壳</wui-nav-item>
+        </wui-nav-group>
+
+        <wui-nav-group header="基础控件">
+          <wui-nav-item icon="check" page="buttons">按钮</wui-nav-item>
+          <wui-nav-item icon="edit" page="inputs">文本输入</wui-nav-item>
+          <wui-nav-item icon="settings" page="selection">选择控件</wui-nav-item>
+          <wui-nav-item icon="calendar" page="dates">日期与日历</wui-nav-item>
+          <wui-nav-item icon="speed" page="status">状态与进度</wui-nav-item>
+        </wui-nav-group>
+
+        <wui-nav-group header="集合与导航">
+          <wui-nav-item icon="list" page="collections" badge="6">列表与网格</wui-nav-item>
+          <wui-nav-item icon="layers" page="navigation">导航与标签</wui-nav-item>
+        </wui-nav-group>
+
+        <wui-nav-group header="浮层与交互">
+          <wui-nav-item icon="window" page="dialogs">对话框与浮出</wui-nav-item>
+          <wui-nav-item icon="code" page="xaml">XAML 渲染</wui-nav-item>
+        </wui-nav-group>
+
+        <wui-nav-item icon="settings" page="settings" slot="footer">设置</wui-nav-item>
+
+        <!-- ======================= 概览 ======================= -->
+        <div data-page="overview" class="wui-page">
+          <div class="demo-hero">
+            <div class="demo-hero__tile" data-icon="window"></div>
+            <h1>WinUI 3 <em>for the Web</em></h1>
+            <p class="wui-body-large wui-secondary">
+              用纯 JavaScript 自定义元素与 CSS 设计令牌，还原 Windows 11 / WinUI 3 的控件外观、状态与交互。
+              没有构建步骤、没有第三方依赖，一个 <span class="wui-code">&lt;script&gt;</span> 就能在浏览器里跑起来。
+            </p>
+            <div class="wui-row">
+              <wui-button variant="accent" icon="play" id="hero-start">开始浏览</wui-button>
+              <wui-button icon="code" id="hero-github">GitHub 仓库</wui-button>
+              <wui-button variant="subtle" icon="terminal" id="hero-xaml">XAML 实时渲染</wui-button>
+            </div>
+          </div>
+
+          <div class="demo-kpis">
+            <div class="demo-kpi"><div class="demo-kpi__value">31</div><div class="demo-kpi__label">个 WinUI 控件与容器</div></div>
+            <div class="demo-kpi"><div class="demo-kpi__value">3 + 1</div><div class="demo-kpi__label">浅色 / 深色 / 高对比 / 跟随系统</div></div>
+            <div class="demo-kpi"><div class="demo-kpi__value">0</div><div class="demo-kpi__label">运行时依赖与构建工具</div></div>
+            <div class="demo-kpi"><div class="demo-kpi__value">1.0</div><div class="demo-kpi__label">当前版本（MIT 协议）</div></div>
+          </div>
+
+          <section class="wui-section" style="margin-top:24px">
+            <h2 class="wui-section__title">设计系统还原度</h2>
+            <div class="demo-cards">
+              <div class="demo-feature">
+                <div class="demo-feature__icon" data-icon="palette"></div>
+                <h3>设计令牌</h3>
+                <p>颜色、字号、圆角、动效曲线与高程全部按 WinUI 的 ControlFillColor / CardStrokeColor 体系取值，浅暗两套主题自动切换。</p>
+              </div>
+              <div class="demo-feature">
+                <div class="demo-feature__icon" data-icon="check"></div>
+                <h3>状态完整</h3>
+                <p>Rest / Hover / Pressed / Disabled / Selected 五种视觉状态，键盘焦点使用 Fluent 双层描边，支持键盘与指针两种焦点模式。</p>
+              </div>
+              <div class="demo-feature">
+                <div class="demo-feature__icon" data-icon="code"></div>
+                <h3>XAML 直通</h3>
+                <p>内置轻量 XAML 解析器，粘贴 WinUI 3 的 XAML 片段即可渲染成真实控件，方便对照迁移。</p>
+              </div>
+              <div class="demo-feature">
+                <div class="demo-feature__icon" data-icon="speed"></div>
+                <h3>无框架</h3>
+                <p>Custom Elements + CSS 变量，可直接嵌入任何页面，也可与 React / Vue / 原生项目共存。</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">快速开始</h2>
+            <p class="wui-section__hint">引入四个样式文件与脚本，然后像写 HTML 一样使用控件。</p>
+            <pre class="demo-snippet">&lt;<b>link</b> rel="stylesheet" href="src/css/tokens.css"&gt;
+&lt;<b>link</b> rel="stylesheet" href="src/css/winui.css"&gt;
+&lt;<b>link</b> rel="stylesheet" href="src/css/controls.css"&gt;
+&lt;<b>link</b> rel="stylesheet" href="src/css/surfaces.css"&gt;
+
+&lt;<b>wui-button</b> variant="accent" icon="add"&gt;新建&lt;/<b>wui-button</b>&gt;
+&lt;<b>wui-textbox</b> header="用户名" placeholder="请输入" clearable&gt;&lt;/<b>wui-textbox</b>&gt;
+&lt;<b>wui-switch</b> checked&gt;启用通知&lt;/<b>wui-switch</b>&gt;
+
+&lt;<b>script</b> src="src/js/core.js"&gt;&lt;/<b>script</b>&gt;
+&lt;<b>script</b> src="src/js/popup.js"&gt;&lt;/<b>script</b>&gt;
+&lt;<b>script</b> src="src/js/inputs.js"&gt;&lt;/<b>script</b>&gt;
+&lt;<b>script</b> src="src/js/collections.js"&gt;&lt;/<b>script</b>&gt;
+&lt;<b>script</b> src="src/js/overlays.js"&gt;&lt;/<b>script</b>&gt;
+&lt;<b>script</b> src="src/js/xaml.js"&gt;&lt;/<b>script</b>&gt;</pre>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">这个示例里能看到什么</h2>
+            <div class="wui-row">
+              <wui-button variant="hyperlink" data-goto="theming">主题与 Mica 材质 →</wui-button>
+              <wui-button variant="hyperlink" data-goto="buttons">按钮的 6 种形态 →</wui-button>
+              <wui-button variant="hyperlink" data-goto="collections">ListView / GridView / TreeView →</wui-button>
+              <wui-button variant="hyperlink" data-goto="dialogs">ContentDialog 与 Flyout →</wui-button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ======================= 主题与材质 ======================= -->
+        <div data-page="theming" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">三套主题、任意强调色、Mica / Acrylic 材质与 WinUI 排版梯度。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">主题</h2>
+            <p class="wui-section__hint">浅色与深色使用同一套语义令牌；「跟随系统」会监听 prefers-color-scheme 变化。</p>
+            <div class="wui-example">
+              <div class="wui-segmented" id="theme-seg-2" role="group" aria-label="主题选择">
+                <button class="wui-segmented__btn" data-theme-set="light" aria-selected="false">浅色</button>
+                <button class="wui-segmented__btn" data-theme-set="dark" aria-selected="false">深色</button>
+                <button class="wui-segmented__btn" data-theme-set="high-contrast" aria-selected="false">高对比度</button>
+                <button class="wui-segmented__btn" data-theme-set="system" aria-selected="true">跟随系统</button>
+              </div>
+              <p class="wui-caption" style="margin-top:12px" id="theme-readout"></p>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">强调色</h2>
+            <p class="wui-section__hint">强调色会按当前主题自动计算 hover / pressed / disabled 色阶，并决定强调色上的文字颜色。</p>
+            <div class="wui-example">
+              <div class="demo-swatches" id="accent-grid"></div>
+              <div class="wui-row" style="margin-top:16px">
+                <label class="wui-label" for="accent-input" style="margin:0">自定义</label>
+                <input id="accent-input" type="color" value="#0078d4"
+                       style="width:44px;height:32px;padding:0;border:1px solid var(--wui-stroke-input);border-radius:4px;background:transparent">
+                <wui-button variant="accent">强调按钮</wui-button>
+                <wui-badge value="8"></wui-badge>
+                <span class="wui-accent-text wui-body-strong">强调文字</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">材质</h2>
+            <div class="demo-grid-2" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+              <div class="demo-surface wui-mica">Mica（窗口基底）</div>
+              <div class="demo-surface wui-acrylic">Acrylic（浮层模糊）</div>
+              <div class="demo-surface wui-layer">Layer 半透明层</div>
+              <div class="demo-surface wui-card">Card 卡片</div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">排版梯度</h2>
+            <div class="wui-example">
+              <div class="demo-type-row"><span class="wui-display">Display</span><span>68 / 92</span></div>
+              <div class="demo-type-row"><span class="wui-title-large">Title Large</span><span>40 / 52</span></div>
+              <div class="demo-type-row"><span class="wui-title">Title</span><span>28 / 36</span></div>
+              <div class="demo-type-row"><span class="wui-subtitle">Subtitle</span><span>20 / 28</span></div>
+              <div class="demo-type-row"><span class="wui-body-large">Body Large</span><span>18 / 24</span></div>
+              <div class="demo-type-row"><span class="wui-body">Body · 正文</span><span>14 / 20</span></div>
+              <div class="demo-type-row"><span class="wui-body-strong">Body Strong</span><span>14 / 20 · 600</span></div>
+              <div class="demo-type-row"><span class="wui-caption">Caption · 辅助说明</span><span>12 / 16</span></div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">高程</h2>
+            <div class="demo-cards">
+              <div class="demo-surface" style="box-shadow:var(--wui-shadow-2)">Shadow 2</div>
+              <div class="demo-surface" style="box-shadow:var(--wui-shadow-8)">Shadow 8</div>
+              <div class="demo-surface" style="box-shadow:var(--wui-shadow-16)">Shadow 16</div>
+              <div class="demo-surface" style="box-shadow:var(--wui-shadow-28)">Shadow 28</div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ======================= 窗口与外壳 ======================= -->
+        <div data-page="shell" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">标题栏、窗口按钮、Mica 背景与 NavigationView 的三种窗格模式。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">窗口预览</h2>
+            <p class="wui-section__hint">标题栏高 32px，窗口按钮宽 46px；关闭按钮在悬停时变为系统红。</p>
+            <div class="demo-window-preview">
+              <div class="wui-titlebar" style="background:var(--wui-bg-tertiary);border-bottom:1px solid var(--wui-card-stroke)">
+                <div class="wui-titlebar__drag">
+                  <span class="wui-titlebar__icon" data-icon="window"></span>
+                  <span class="wui-titlebar__title">示例应用 — 文档.docx</span>
+                </div>
+                <div class="wui-caption-buttons">
+                  <button class="wui-caption-btn" data-icon="minimize" aria-label="最小化"></button>
+                  <button class="wui-caption-btn" data-icon="maximize" aria-label="最大化"></button>
+                  <button class="wui-caption-btn wui-caption-btn--close" data-icon="close" aria-label="关闭"></button>
+                </div>
+              </div>
+              <div style="padding:20px 24px;display:flex;align-items:center;gap:16px">
+                <wui-person initials="ZW" size="lg"></wui-person>
+                <div>
+                  <div class="wui-body-strong">张伟</div>
+                  <div class="wui-caption">已保存到 OneDrive · 刚刚</div>
+                </div>
+                <div class="wui-spacer"></div>
+                <wui-button variant="accent">共享</wui-button>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">NavigationView 窗格模式</h2>
+            <p class="wui-section__hint">expanded（280px）/ compact（48px，仅图标）/ minimal（浮层，带遮罩）/ auto（按容器宽度自动切换）。</p>
+            <div class="wui-row" style="margin-bottom:12px">
+              <div class="wui-segmented" id="pane-seg" role="group" aria-label="窗格模式">
+                <button class="wui-segmented__btn" data-pane="expanded" aria-selected="true">Expanded</button>
+                <button class="wui-segmented__btn" data-pane="compact" aria-selected="false">Compact</button>
+                <button class="wui-segmented__btn" data-pane="minimal" aria-selected="false">Minimal</button>
+                <button class="wui-segmented__btn" data-pane="auto" aria-selected="false">Auto</button>
+              </div>
+            </div>
+            <div style="height:340px;border:1px solid var(--wui-card-stroke);border-radius:8px;overflow:hidden;background:var(--wui-card-bg-secondary)">
+              <wui-nav-view id="mini-nav" brand="示例" icon="window" pane-mode="expanded">
+                <wui-nav-item icon="home" page="a" selected>主页</wui-nav-item>
+                <wui-nav-item icon="document" page="b">文档</wui-nav-item>
+                <wui-nav-item icon="image" page="c">图片</wui-nav-item>
+                <wui-nav-item icon="settings" slot="footer">设置</wui-nav-item>
+                <div data-page="a" style="padding:20px">
+                  <div class="wui-body-strong">主页</div>
+                  <div class="wui-caption">拖动窗口宽度可以观察 Auto 模式的响应式切换。</div>
+                </div>
+                <div data-page="b" style="padding:20px" hidden><div class="wui-body-strong">文档</div></div>
+                <div data-page="c" style="padding:20px" hidden><div class="wui-body-strong">图片</div></div>
+              </wui-nav-view>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">窗口按钮行为</h2>
+            <div class="wui-example wui-row">
+              <wui-button id="win-max" icon="maximize">最大化 / 还原</wui-button>
+              <wui-button id="win-close" icon="close">模拟关闭</wui-button>
+              <span class="wui-caption">标题栏右侧的按钮同样可用。</span>
+            </div>
+          </section>
+        </div>
+
+        <!-- ======================= 按钮 ======================= -->
+        <div data-page="buttons" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">标准、强调、次要、超链接、描边五种样式，以及 SplitButton / DropDownButton / CommandBar。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">样式</h2>
+            <div class="wui-example wui-row">
+              <wui-button>标准按钮</wui-button>
+              <wui-button variant="accent">强调按钮</wui-button>
+              <wui-button variant="subtle">次要按钮</wui-button>
+              <wui-button variant="accent-outline">描边按钮</wui-button>
+              <wui-button variant="hyperlink">超链接按钮</wui-button>
+              <wui-button disabled>禁用状态</wui-button>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">尺寸与图标</h2>
+            <div class="wui-example wui-row">
+              <wui-button size="sm" icon="add">小号</wui-button>
+              <wui-button icon="add">默认</wui-button>
+              <wui-button size="lg" icon="add">大号</wui-button>
+              <wui-button icon="settings" aria-label="设置" tooltip="设置"></wui-button>
+              <wui-button icon="share" variant="accent" aria-label="共享" tooltip="共享"></wui-button>
+              <wui-button icon="delete" variant="subtle" aria-label="删除" tooltip="删除"></wui-button>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">切换与组合</h2>
+            <div class="wui-example wui-row">
+              <wui-button toggle icon="heart">收藏</wui-button>
+              <wui-button toggle checked icon="pin">已固定</wui-button>
+              <wui-button toggle disabled>禁用切换</wui-button>
+              <span class="wui-commandbar__separator"></span>
+              <wui-split-button label="保存" icon="save" items="另存为,导出为 PDF,导出为图片"></wui-split-button>
+              <wui-dropdown-button label="筛选" icon="filter" items="全部项目,进行中,已完成,已归档"></wui-dropdown-button>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">命令栏 CommandBar</h2>
+            <p class="wui-section__hint">图标在上、文字在下，是 WinUI 命令栏的标准排布；点击右侧按钮会写入下方状态区。</p>
+            <wui-command-bar id="cmdbar">
+              <wui-app-bar-button icon="add" label="新建" data-cmd="新建"></wui-app-bar-button>
+              <wui-app-bar-button icon="save" label="保存" data-cmd="保存"></wui-app-bar-button>
+              <wui-app-bar-button icon="share" label="共享" data-cmd="共享"></wui-app-bar-button>
+              <span class="wui-commandbar__separator"></span>
+              <wui-app-bar-button icon="delete" label="删除" data-cmd="删除"></wui-app-bar-button>
+              <div class="wui-spacer"></div>
+              <wui-app-bar-button icon="more" label="更多" data-cmd="更多"></wui-app-bar-button>
+            </wui-command-bar>
+            <div class="demo-status" id="cmd-status"></div>
+            <pre class="demo-snippet">&lt;<b>wui-command-bar</b>&gt;
+  &lt;<b>wui-app-bar-button</b> icon="add" label="新建"&gt;&lt;/<b>wui-app-bar-button</b>&gt;
+  &lt;<b>wui-app-bar-button</b> icon="delete" label="删除"&gt;&lt;/<b>wui-app-bar-button</b>&gt;
+&lt;/<b>wui-command-bar</b>&gt;</pre>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">表单场景</h2>
+            <div class="wui-example">
+              <div class="wui-stack wui-stack--gap-12" style="max-width:420px">
+                <wui-textbox header="项目名称" placeholder="例如：Fluent 设计系统" value="Fluent 设计系统" clearable></wui-textbox>
+                <div class="wui-row" style="justify-content:flex-end">
+                  <wui-button>取消</wui-button>
+                  <wui-button variant="accent">创建项目</wui-button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ======================= 文本输入 ======================= -->
+        <div data-page="inputs" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">TextBox、PasswordBox、NumberBox、AutoSuggestBox 与 ComboBox，含校验与禁用状态。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">基础</h2>
+            <div class="demo-field-grid">
+              <wui-textbox header="姓名" placeholder="请输入姓名" clearable></wui-textbox>
+              <wui-textbox header="邮箱" placeholder="name@example.com" icon="mail" value="zhang.wei@example.com" clearable></wui-textbox>
+              <wui-textbox header="禁用" value="不可编辑" disabled></wui-textbox>
+              <wui-textbox header="只读" value="只读内容" readonly></wui-textbox>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">状态与校验</h2>
+            <div class="demo-field-grid">
+              <wui-textbox header="用户名" placeholder="至少 4 个字符" description="用于登录，创建后不可修改。"></wui-textbox>
+              <wui-textbox header="手机号" value="12345" error="手机号格式不正确" required></wui-textbox>
+              <wui-password-box header="密码" placeholder="请输入密码" value="winui3-demo"></wui-password-box>
+              <wui-numberbox header="数量" value="8" min="0" max="999" show-spin description="支持滚轮外的键盘上下键"></wui-numberbox>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">多行文本</h2>
+            <div class="wui-example" style="max-width:560px">
+              <wui-textbox header="备注" multiline placeholder="写点什么…" description="TextArea 版本，右下角可拖拽调整高度。"></wui-textbox>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">搜索与选择</h2>
+            <div class="demo-field-grid">
+              <wui-autosuggest header="搜索控件" placeholder="输入关键字" items="按钮,文本框,复选框,单选框,开关,滑块,进度条,对话框"></wui-autosuggest>
+              <wui-combobox header="城市" items="北京,上海,广州,深圳,杭州,成都" selected-index="1"></wui-combobox>
+              <wui-combobox header="禁用下拉" items="A,B" disabled></wui-combobox>
+              <wui-date-picker header="入职日期" value="2026-11-22"></wui-date-picker>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">输入事件</h2>
+            <p class="wui-section__hint">所有输入控件都会派发 input / change 事件，可直接用 addEventListener 监听。</p>
+            <div class="wui-example" style="max-width:560px">
+              <wui-textbox id="live-input" header="实时预览" placeholder="在这里输入…" clearable></wui-textbox>
+              <p class="wui-caption" style="margin-top:8px" id="live-readout">尚未输入</p>
+            </div>
+            <pre class="demo-snippet">document.querySelector('wui-textbox').addEventListener('<b>change</b>', (e) =&gt; {
+  console.log(e.detail.value);
+});</pre>
+          </section>
+        </div>
+
+        <!-- ======================= 选择控件 ======================= -->
+        <div data-page="selection" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">CheckBox、RadioButton、ToggleSwitch、Slider 与 RatingControl。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">复选框</h2>
+            <div class="wui-example">
+              <div class="wui-stack wui-stack--gap-4">
+                <wui-checkbox checked>同步到云端</wui-checkbox>
+                <wui-checkbox>启动时打开上次的项目</wui-checkbox>
+                <wui-checkbox indeterminate>应用到部分项目</wui-checkbox>
+                <wui-checkbox checked disabled>禁用且选中</wui-checkbox>
+                <wui-checkbox disabled>禁用未选中</wui-checkbox>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">单选按钮</h2>
+            <div class="wui-example">
+              <div class="wui-stack wui-stack--gap-4">
+                <wui-radio name="plan" checked>个人版 — 免费用于个人项目</wui-radio>
+                <wui-radio name="plan">团队版 — 每位成员 ¥ 30 / 月</wui-radio>
+                <wui-radio name="plan">企业版 — 联系销售获取报价</wui-radio>
+                <wui-radio name="plan" disabled>教育版 — 暂不可用</wui-radio>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">开关</h2>
+            <div class="wui-example">
+              <div class="wui-stack wui-stack--gap-8" style="max-width:420px">
+                <wui-switch checked>自动保存</wui-switch>
+                <wui-switch>使用紧凑模式</wui-switch>
+                <wui-switch checked disabled>受组织策略控制</wui-switch>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">滑块</h2>
+            <div class="wui-example" style="max-width:520px">
+              <div class="wui-stack wui-stack--gap-16">
+                <wui-slider value="35" show-value></wui-slider>
+                <wui-slider value="62" min="0" max="200" step="1" show-value></wui-slider>
+                <wui-slider value="80" disabled show-value></wui-slider>
+              </div>
+              <p class="wui-caption" style="margin-top:8px">支持拖拽、方向键微调、Home / End 跳到两端。</p>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">评分</h2>
+            <div class="wui-example wui-row" style="gap:32px">
+              <wui-rating value="4" caption></wui-rating>
+              <wui-rating value="2.5" max="5" caption></wui-rating>
+              <wui-rating value="0" caption></wui-rating>
+            </div>
+          </section>
+        </div>
+
+        <!-- ======================= 日期与日历 ======================= -->
+        <div data-page="dates" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">CalendarView 与 CalendarDatePicker，周一为首日，今日描边、选中强调色。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">CalendarView</h2>
+            <div class="demo-grid-2">
+              <wui-calendar value="2026-11-22"></wui-calendar>
+              <div class="wui-example">
+                <div class="wui-stack wui-stack--gap-12">
+                  <div class="wui-body-strong">选择规则</div>
+                  <p class="wui-caption">点击任意日期会派发 change 事件，detail.value 为 <span class="wui-code">YYYY-MM-DD</span>。</p>
+                  <wui-date-picker header="开始日期" value="2026-11-22"></wui-date-picker>
+                  <wui-date-picker header="结束日期" value="2026-12-05"></wui-date-picker>
+                  <div class="wui-row"><wui-button icon="clock">添加提醒</wui-button></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">事件</h2>
+            <pre class="demo-snippet">calendar.addEventListener('<b>change</b>', (e) =&gt; {
+  console.log(e.detail.value); <i>// "2026-11-22"</i>
+});</pre>
+          </section>
+        </div>
+
+        <!-- ======================= 状态与进度 ======================= -->
+        <div data-page="status" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">ProgressBar、ProgressRing、InfoBadge 与 InfoBar。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">进度条</h2>
+            <div class="wui-example" style="max-width:560px">
+              <div class="wui-stack wui-stack--gap-16">
+                <div>
+                  <div class="wui-caption" style="margin-bottom:6px">确定进度 · 45%</div>
+                  <wui-progress-bar value="45"></wui-progress-bar>
+                </div>
+                <div>
+                  <div class="wui-caption" style="margin-bottom:6px">不确定进度</div>
+                  <wui-progress-bar indeterminate></wui-progress-bar>
+                </div>
+                <div>
+                  <div class="wui-caption" style="margin-bottom:6px">已暂停</div>
+                  <wui-progress-bar value="70" paused></wui-progress-bar>
+                </div>
+                <div>
+                  <div class="wui-caption" style="margin-bottom:6px">错误状态</div>
+                  <wui-progress-bar value="70" error></wui-progress-bar>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">环形进度</h2>
+            <div class="wui-example wui-row" style="gap:28px">
+              <wui-progress-ring indeterminate size="24"></wui-progress-ring>
+              <wui-progress-ring indeterminate size="32"></wui-progress-ring>
+              <wui-progress-ring value="25" size="40"></wui-progress-ring>
+              <wui-progress-ring value="60" size="48" show-value></wui-progress-ring>
+              <wui-progress-ring value="100" size="48" show-value></wui-progress-ring>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">徽章</h2>
+            <div class="wui-example wui-row" style="gap:20px">
+              <wui-badge value="1"></wui-badge>
+              <wui-badge value="12"></wui-badge>
+              <wui-badge value="99+"></wui-badge>
+              <wui-badge variant="critical" value="3"></wui-badge>
+              <wui-badge variant="attention" value="!"></wui-badge>
+              <wui-badge variant="subtle" value="草稿"></wui-badge>
+              <wui-badge variant="dot"></wui-badge>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">提示条 InfoBar</h2>
+            <div class="wui-stack wui-stack--gap-12" style="max-width:680px">
+              <wui-infobar severity="informational" title="有新版本可用" message="WinUI 3 for the Web 1.1 已发布，包含 6 项改进。" closable></wui-infobar>
+              <wui-infobar severity="success" title="保存成功" message="所有更改已同步到云端。" closable></wui-infobar>
+              <wui-infobar severity="warning" title="存储空间不足" message="剩余空间低于 10%，建议清理缓存。">
+                <wui-button size="sm" variant="subtle">管理存储</wui-button>
+              </wui-infobar>
+              <wui-infobar severity="error" title="连接失败" message="无法连接到服务器，请检查网络后重试。" closable>
+                <wui-button size="sm">重试</wui-button>
+              </wui-infobar>
+            </div>
+          </section>
+        </div>
+
+        <!-- ======================= 列表与网格 ======================= -->
+        <div data-page="collections" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">ListView、GridView、TreeView、Expander 与 PipsPager。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">ListView</h2>
+            <div class="demo-grid-2">
+              <div class="demo-list-panel">
+                <wui-list-view id="list-demo" selected-index="0" selection-mode="single">
+                  <wui-list-item icon="document" subtitle="今天 09:12 · 2.4 MB" meta="已同步">季度汇报.pptx</wui-list-item>
+                  <wui-list-item icon="image" subtitle="昨天 18:40 · 860 KB" meta="已同步">界面截图.png</wui-list-item>
+                  <wui-list-item icon="folder" subtitle="3 个文件" meta="本地">设计资源</wui-list-item>
+                  <wui-list-item icon="music" subtitle="前天 21:05 · 4.1 MB" meta="已同步">会议录音.mp3</wui-list-item>
+                  <wui-list-item icon="document" subtitle="2026-11-18 · 128 KB">需求说明.docx</wui-list-item>
+                </wui-list-view>
+              </div>
+              <div>
+                <div class="wui-body-strong" style="margin-bottom:6px">选中项</div>
+                <p class="wui-caption" id="list-readout">季度汇报.pptx</p>
+                <div class="wui-divider" style="margin:16px 0"></div>
+                <div class="wui-body-strong" style="margin-bottom:8px">分页 PipsPager</div>
+                <wui-pips-pager count="6" selected="0"></wui-pips-pager>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">GridView</h2>
+            <wui-grid-view selected-index="1">
+              <wui-grid-item icon="folder" subtitle="12 项">项目文件</wui-grid-item>
+              <wui-grid-item icon="image" subtitle="248 张">图片</wui-grid-item>
+              <wui-grid-item icon="video" subtitle="6 个">视频</wui-grid-item>
+              <wui-grid-item icon="music" subtitle="32 首">音乐</wui-grid-item>
+              <wui-grid-item icon="document" subtitle="18 个">文档</wui-grid-item>
+              <wui-grid-item icon="download" subtitle="5 个">下载</wui-grid-item>
+            </wui-grid-view>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">TreeView</h2>
+            <div class="wui-example" style="max-width:420px">
+              <wui-tree-view>
+                <wui-tree-node label="example-winui3-web" icon="folder" expanded>
+                  <wui-tree-node label="src" icon="folder" expanded>
+                    <wui-tree-node label="css" icon="folder" expanded>
+                      <wui-tree-node label="tokens.css" icon="document"></wui-tree-node>
+                      <wui-tree-node label="controls.css" icon="document"></wui-tree-node>
+                    </wui-tree-node>
+                    <wui-tree-node label="js" icon="folder">
+                      <wui-tree-node label="core.js" icon="document"></wui-tree-node>
+                      <wui-tree-node label="xaml.js" icon="document"></wui-tree-node>
+                    </wui-tree-node>
+                  </wui-tree-node>
+                  <wui-tree-node label="index.html" icon="document"></wui-tree-node>
+                  <wui-tree-node label="README.md" icon="document"></wui-tree-node>
+                </wui-tree-node>
+              </wui-tree-view>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">Expander</h2>
+            <div class="wui-stack wui-stack--gap-12" style="max-width:640px">
+              <wui-expander header="高级设置" expanded>
+                <div class="wui-stack wui-stack--gap-12">
+                  <wui-switch checked>启用 GPU 加速</wui-switch>
+                  <wui-switch>记录详细日志</wui-switch>
+                  <wui-combobox header="缓存策略" items="自动,始终,从不" selected-index="0"></wui-combobox>
+                </div>
+              </wui-expander>
+              <wui-expander header="关于此项目">
+                <p class="wui-caption">使用 MIT 协议开源，欢迎提交 Issue 与 PR。</p>
+              </wui-expander>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">面包屑</h2>
+            <wui-breadcrumb items="此电脑,文档,设计资源,第二季度"></wui-breadcrumb>
+          </section>
+        </div>
+
+        <!-- ======================= 导航与标签 ======================= -->
+        <div data-page="navigation" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">TabView（可关闭、可新增）与 BreadcrumbBar、CommandBar 组合。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">TabView</h2>
+            <p class="wui-section__hint">点击 + 新建标签页，选中标签有底部强调色指示条。</p>
+            <div style="height:320px;border:1px solid var(--wui-card-stroke);border-radius:8px;padding:8px;background:var(--wui-card-bg-secondary)">
+              <wui-tab-view id="tab-demo" addable>
+                <wui-tab header="文档" icon="document" selected>
+                  <div class="wui-page" style="padding:16px">
+                    <div class="wui-body-strong">文档</div>
+                    <p class="wui-caption" style="margin-top:4px">每个标签页的 DOM 都保留在文档中，切换时不会丢失状态。</p>
+                  </div>
+                </wui-tab>
+                <wui-tab header="预览" icon="image" closable>
+                  <div class="wui-page" style="padding:16px">
+                    <div class="demo-surface" style="height:180px">预览区域</div>
+                  </div>
+                </wui-tab>
+                <wui-tab header="设置" icon="settings" closable>
+                  <div class="wui-page" style="padding:16px">
+                    <wui-switch checked>实时更新</wui-switch>
+                  </div>
+                </wui-tab>
+              </wui-tab-view>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">面包屑与分页</h2>
+            <div class="wui-example">
+              <wui-breadcrumb items="首页,项目,WinUI 3 for the Web,示例页"></wui-breadcrumb>
+              <div class="wui-divider" style="margin:16px 0"></div>
+              <div class="wui-row">
+                <span class="wui-caption">第 2 页，共 6 页</span>
+                <div class="wui-spacer"></div>
+                <wui-pips-pager count="6" selected="1"></wui-pips-pager>
+              </div>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">人像与徽章</h2>
+            <div class="wui-example wui-row" style="gap:24px">
+              <wui-person initials="ZW"></wui-person>
+              <wui-person initials="LW" size="lg" badge></wui-person>
+              <wui-person initials="CY" size="xl"></wui-person>
+              <wui-person src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%234f6bed'/%3E%3Ccircle cx='32' cy='25' r='11' fill='%23fff' opacity='.9'/%3E%3Cpath d='M10 64c2-14 11-20 22-20s20 6 22 20z' fill='%23fff' opacity='.9'/%3E%3C/svg%3E" size="lg" badge></wui-person>
+            </div>
+          </section>
+        </div>
+
+        <!-- ======================= 对话框与浮出 ======================= -->
+        <div data-page="dialogs" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">ContentDialog、Flyout、MenuFlyout、TeachingTip 与 ToolTip。</p>
+          </div>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">ContentDialog</h2>
+            <p class="wui-section__hint">模态遮罩 + 焦点陷阱，Esc 关闭，按钮顺序遵循 WinUI（主操作在左）。</p>
+            <div class="wui-example wui-row">
+              <wui-button id="dlg-basic">打开对话框</wui-button>
+              <wui-button id="dlg-primary" variant="accent">主次按钮</wui-button>
+              <wui-button id="dlg-danger" variant="subtle" icon="delete">危险操作</wui-button>
+              <wui-button id="dlg-wide" variant="subtle" icon="grid">宽对话框</wui-button>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">Flyout 与菜单</h2>
+            <div class="wui-example wui-row">
+              <wui-button id="fly-basic" icon="window">Flyout</wui-button>
+              <wui-button id="fly-menu" icon="more">MenuFlyout</wui-button>
+              <wui-button id="fly-context" icon="list">上下文菜单</wui-button>
+              <wui-dropdown-button label="下拉菜单" items="打开,重命名,复制链接,删除"></wui-dropdown-button>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">TeachingTip 与 ToolTip</h2>
+            <div class="wui-example wui-row">
+              <wui-button id="tip-teach" icon="sparkle">教学提示</wui-button>
+              <wui-button data-tooltip="这是 WinUI 风格的 ToolTip" icon="info">悬停查看 ToolTip</wui-button>
+              <wui-button variant="subtle" data-tooltip="支持任意元素：data-tooltip 属性" icon="tag">另一个</wui-button>
+            </div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">结果</h2>
+            <div class="demo-status" id="dialog-status"></div>
+          </section>
+
+          <section class="wui-section">
+            <h2 class="wui-section__title">API</h2>
+            <pre class="demo-snippet"><i>// 对话框返回 Promise，值为按下的按钮</i>
+const r = await WinUI.dialog({
+  title: '删除项目',
+  body: '此操作不可撤销。',
+  primaryText: '删除',
+  closeText: '取消',
+  danger: true
+});
+
+<i>// 浮出层与菜单</i>
+WinUI.flyout(anchor, '&lt;p&gt;内容&lt;/p&gt;');
+WinUI.showMenu(anchor, [{ label: '重命名', icon: 'edit' }], { onSelect });</pre>
+          </section>
+        </div>
+
+        <!-- ======================= XAML ======================= -->
+        <div data-page="xaml" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">左侧编辑 WinUI 3 的 XAML 片段，右侧即刻得到对应控件。</p>
+          </div>
+
+          <div class="demo-grid-2" style="grid-template-columns:minmax(320px,1fr) minmax(320px,1.1fr)">
+            <div>
+              <div class="wui-row" style="margin-bottom:8px">
+                <wui-button id="xaml-run" variant="accent" size="sm" icon="play">渲染</wui-button>
+                <wui-button id="xaml-reset" size="sm" icon="refresh">恢复示例</wui-button>
+                <span class="wui-caption">支持 Button / TextBox / StackPanel / Grid / InfoBar 等</span>
+              </div>
+              <textarea id="xaml-editor" class="demo-editor" spellcheck="false"></textarea>
+              <div class="demo-error" id="xaml-error" hidden></div>
+            </div>
+            <div>
+              <div class="wui-caption" style="margin-bottom:8px">预览</div>
+              <div class="demo-xaml-out" id="xaml-preview"></div>
+            </div>
+          </div>
+
+          <section class="wui-section" style="margin-top:28px">
+            <h2 class="wui-section__title">映射关系</h2>
+            <div class="demo-grid-2">
+              <div class="wui-card">
+                <div class="wui-body-strong" style="margin-bottom:8px">XAML 标签 → 自定义元素</div>
+                <pre class="demo-snippet" style="margin:0">Button            → wui-button
+TextBox           → wui-textbox
+ToggleSwitch      → wui-switch
+NavigationView    → wui-nav-view
+ListView          → wui-list-view
+ContentDialog     → WinUI.dialog()
+StackPanel        → .wui-stack
+Border            → .wui-card</pre>
+              </div>
+              <div class="wui-card">
+                <div class="wui-body-strong" style="margin-bottom:8px">属性映射</div>
+                <pre class="demo-snippet" style="margin:0">Content="确定"        → 文本内容
+PlaceholderText="…"  → placeholder
+IsChecked="True"     → checked
+IsExpanded="True"    → expanded
+Severity="Success"   → severity
+Margin="12,8"        → margin: 8px 12px
+Spacing="12"         → gap: 12px
+Width="220"          → width: 220px</pre>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ======================= 设置 ======================= -->
+        <div data-page="settings" class="wui-page" hidden>
+          <div class="wui-page__header">
+            <p class="wui-page__subtitle">用 SettingsCard 组织设置项，是 WinUI 3 设置页的标准做法。</p>
+          </div>
+
+          <div class="wui-stack wui-stack--gap-8" style="max-width:820px">
+            <div class="wui-settings-card">
+              <span class="wui-settings-card__icon" data-icon="palette"></span>
+              <div class="wui-settings-card__body">
+                <div class="wui-settings-card__title">应用主题</div>
+                <div class="wui-settings-card__desc">选择浅色、深色，或跟随系统设置。</div>
+              </div>
+              <div class="wui-settings-card__action">
+                <wui-combobox id="settings-theme" items="浅色,深色,跟随系统" selected-index="2"></wui-combobox>
+              </div>
+            </div>
+
+            <div class="wui-settings-card">
+              <span class="wui-settings-card__icon" data-icon="sparkle"></span>
+              <div class="wui-settings-card__body">
+                <div class="wui-settings-card__title">动画效果</div>
+                <div class="wui-settings-card__desc">关闭后控件状态变化将立即完成。</div>
+              </div>
+              <div class="wui-settings-card__action">
+                <wui-switch id="settings-motion" checked></wui-switch>
+              </div>
+            </div>
+
+            <div class="wui-settings-card">
+              <span class="wui-settings-card__icon" data-icon="person"></span>
+              <div class="wui-settings-card__body">
+                <div class="wui-settings-card__title">账户</div>
+                <div class="wui-settings-card__desc">zhang.wei@example.com</div>
+              </div>
+              <div class="wui-settings-card__action">
+                <wui-person initials="ZW" badge></wui-person>
+                <wui-button size="sm">管理</wui-button>
+              </div>
+            </div>
+
+            <div class="wui-settings-card">
+              <span class="wui-settings-card__icon" data-icon="info"></span>
+              <div class="wui-settings-card__body">
+                <div class="wui-settings-card__title">关于 WinUI 3 for the Web</div>
+                <div class="wui-settings-card__desc">版本 1.0.0 · MIT License · 无第三方依赖</div>
+              </div>
+              <div class="wui-settings-card__action">
+                <wui-button size="sm" icon="external" id="settings-repo">GitHub</wui-button>
+              </div>
+            </div>
+          </div>
+
+          <section class="wui-section" style="margin-top:28px">
+            <h2 class="wui-section__title">令牌检查器</h2>
+            <p class="wui-section__hint">当前主题解析后的关键 CSS 变量（实时读取）。</p>
+            <pre class="demo-snippet" id="token-readout" style="max-width:820px"></pre>
+          </section>
+        </div>
+
+      </wui-nav-view>
+    </div>
+  </div>
+</div>
+
+<script src="src/js/core.js"></script>
+<script src="src/js/popup.js"></script>
+<script src="src/js/inputs.js"></script>
+<script src="src/js/collections.js"></script>
+<script src="src/js/overlays.js"></script>
+<script src="src/js/xaml.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  const REPO = "https://github.com/8888888b/example-winui3-web";
+
+  /* ---------- 图标占位 ---------- */
+  $$("[data-icon]").forEach((el) => {
+    el.innerHTML = WinUI.icon(el.dataset.icon);
+    el.classList.add("wui-icon");
+  });
+
+  /* ---------- 标题栏 ---------- */
+  const app = $("#app");
+  function toggleMax() {
+    const on = app.classList.toggle("is-max");
+    $("#btn-max").innerHTML = WinUI.icon(on ? "restore" : "maximize");
+    $("#btn-max").classList.add("wui-icon");
+    $("#btn-max").setAttribute("aria-label", on ? "还原" : "最大化");
+  }
+  $("#btn-max").addEventListener("click", toggleMax);
+  $("#win-max").addEventListener("click", toggleMax);
+  function closeDemo() {
+    WinUI.dialog({
+      title: "这是网页演示",
+      body: "窗口按钮的行为与 WinUI 一致：最小化、最大化、关闭。不过在浏览器里，我们只能演示它们的视觉状态。",
+      primaryText: "知道了",
+      closeText: "取消",
+    });
+  }
+  $("#btn-close").addEventListener("click", closeDemo);
+  $("#win-close").addEventListener("click", closeDemo);
+
+  /* ---------- 导航 ---------- */
+  const nav = $("#nav");
+  function goto(page) {
+    const item = nav.querySelector('wui-nav-item[page="' + page + '"]');
+    if (item) nav.select(item);
+  }
+  $$("[data-goto]").forEach((b) => b.addEventListener("click", () => goto(b.dataset.goto)));
+  $("#hero-start").addEventListener("click", () => goto("buttons"));
+  $("#hero-xaml").addEventListener("click", () => goto("xaml"));
+  ["#github-btn", "#hero-github", "#settings-repo"].forEach((sel) => {
+    const el = $(sel);
+    if (el) el.addEventListener("click", () => window.open(REPO, "_blank", "noopener"));
+  });
+
+  /* ---------- 主题 ---------- */
+  const segs = [$("#theme-seg"), $("#theme-seg-2")].filter(Boolean);
+  function paintTheme() {
+    const mode = WinUI.getTheme().mode;
+    segs.forEach((seg) =>
+      $$(".wui-segmented__btn", seg).forEach((b) => {
+        const on = b.dataset.themeSet === mode;
+        b.setAttribute("aria-selected", on ? "true" : "false");
+      })
+    );
+    const readout = $("#theme-readout");
+    if (readout) {
+      readout.textContent =
+        "当前模式：" + mode + " · 解析结果：" + WinUI.getTheme().resolved;
+    }
+    paintTokens();
+  }
+  segs.forEach((seg) =>
+    seg.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-theme-set]");
+      if (!b) return;
+      WinUI.setTheme(b.dataset.themeSet);
+    })
+  );
+  WinUI.theme.onChange(paintTheme);
+
+  /* ---------- 强调色 ---------- */
+  const accentGrid = $("#accent-grid");
+  function paintAccents() {
+    const current = WinUI.getAccent().toLowerCase();
+    $$(".demo-swatch", accentGrid).forEach((s) => {
+      s.setAttribute("aria-pressed", s.dataset.accent.toLowerCase() === current ? "true" : "false");
+    });
+    const input = $("#accent-input");
+    if (input) input.value = current;
+  }
+  if (accentGrid) {
+    accentGrid.innerHTML = WinUI.accent.palette
+      .map(
+        (hex) =>
+          '<button class="demo-swatch" style="background:' +
+          hex +
+          '" data-accent="' +
+          hex +
+          '" aria-label="' +
+          hex +
+          '"></button>'
+      )
+      .join("");
+    accentGrid.addEventListener("click", (e) => {
+      const s = e.target.closest("[data-accent]");
+      if (!s) return;
+      WinUI.setAccent(s.dataset.accent);
+      paintAccents();
+    });
+  }
+  $("#accent-input").addEventListener("input", (e) => {
+    WinUI.setAccent(e.target.value);
+    paintAccents();
+  });
+  WinUI.accent.onChange(paintAccents);
+
+  const accentBtn = $("#accent-btn");
+  accentBtn.addEventListener("click", () => {
+    const panel = document.createElement("div");
+    panel.className = "wui-flyout";
+    panel.style.width = "248px";
+    panel.innerHTML =
+      '<div class="wui-body-strong" style="margin-bottom:10px">强调色</div>' +
+      '<div class="demo-swatches" id="accent-flyout-grid">' +
+      WinUI.accent.palette
+        .map(
+          (hex) =>
+            '<button class="demo-swatch" style="background:' +
+            hex +
+            '" data-accent="' +
+            hex +
+            '"></button>'
+        )
+        .join("") +
+      "</div>";
+    const f = WinUI.flyout(accentBtn, panel, { align: "end" });
+    panel.addEventListener("click", (e) => {
+      const s = e.target.closest("[data-accent]");
+      if (!s) return;
+      WinUI.setAccent(s.dataset.accent);
+      paintAccents();
+      f.close();
+
+    });
+  });
+
+  /* ---------- 窗格模式 ---------- */
+  const paneSeg = $("#pane-seg");
+  const miniNav = $("#mini-nav");
+  if (paneSeg) {
+    paneSeg.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-pane]");
+      if (!b) return;
+      $$(".wui-segmented__btn", paneSeg).forEach((x) =>
+        x.setAttribute("aria-selected", x === b ? "true" : "false")
+      );
+      miniNav.setAttribute("pane-mode", b.dataset.pane);
+    });
+  }
+
+  /* ---------- 命令栏 ---------- */
+  const cmdStatus = $("#cmd-status");
+  function status(host, message, severity) {
+    if (!host) return;
+    const bar = document.createElement("wui-infobar");
+    bar.setAttribute("severity", severity || "informational");
+    bar.setAttribute("message", message);
+    bar.setAttribute("closable", "");
+    host.appendChild(bar);
+    setTimeout(() => {
+      bar.style.transition = "opacity 250ms linear";
+      bar.style.opacity = "0";
+      setTimeout(() => bar.remove(), 260);
+    }, 3600);
+  }
+  $$("#cmdbar [data-cmd]").forEach((btn) =>
+    btn.addEventListener("click", () => status(cmdStatus, "已执行命令：" + btn.dataset.cmd, "success"))
+  );
+
+  /* ---------- 输入事件 ---------- */
+  const live = $("#live-input");
+  const liveOut = $("#live-readout");
+  if (live && liveOut) {
+    live.addEventListener("input", () => {
+      const v = live.value;
+      liveOut.textContent = v ? v.length + " 个字符：" + v : "尚未输入";
+    });
+  }
+
+  /* ---------- 列表 ---------- */
+  const listDemo = $("#list-demo");
+  if (listDemo) {
+    listDemo.addEventListener("select", (e) => {
+      $("#list-readout").textContent = e.detail.value || "";
+    });
+  }
+
+  /* ---------- 对话框与浮层 ---------- */
+  const dlgStatus = $("#dialog-status");
+  $("#dlg-basic").addEventListener("click", async () => {
+    const r = await WinUI.dialog({
+      title: "保存更改？",
+      body: "你有 3 个未保存的更改。关闭前是否要保存？",
+      primaryText: "保存",
+      secondaryText: "不保存",
+      closeText: "取消",
+    });
+    status(dlgStatus, "对话框返回：" + r, r === "close" ? "warning" : "success");
+  });
+  $("#dlg-primary").addEventListener("click", async () => {
+    const body = document.createElement("div");
+    body.innerHTML =
+      '<p style="margin-bottom:12px">选择要应用到所有项目的外观：</p>' +
+      '<div class="wui-stack wui-stack--gap-4">' +
+      '<wui-radio name="dlg-theme" checked>跟随系统</wui-radio>' +
+      '<wui-radio name="dlg-theme">浅色</wui-radio>' +
+      '<wui-radio name="dlg-theme">深色</wui-radio>' +
+      "</div>";
+    const r = await WinUI.dialog({
+      title: "应用到全部项目",
+      body: body,
+      primaryText: "应用",
+      closeText: "取消",
+    });
+    status(dlgStatus, "对话框返回：" + r, "informational");
+  });
+  $("#dlg-danger").addEventListener("click", async () => {
+    const r = await WinUI.dialog({
+      title: "删除这个项目？",
+      body: "项目「Fluent 设计系统」及其 42 个文件将被永久删除，此操作不可撤销。",
+      primaryText: "删除",
+      closeText: "取消",
+      danger: true,
+    });
+    status(dlgStatus, r === "primary" ? "已删除（演示）" : "已取消", r === "primary" ? "error" : "informational");
+  });
+  $("#dlg-wide").addEventListener("click", () => {
+    WinUI.dialog({
+      title: "许可证",
+      wide: true,
+      body:
+        '<p style="margin-bottom:12px">MIT License · Copyright (c) 2026 WinUI 3 for the Web contributors</p>' +
+        '<p class="wui-caption">Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.</p>',
+      primaryText: "我同意",
+      closeText: "关闭",
+    });
+  });
+
+  $("#fly-basic").addEventListener("click", (e) => {
+    WinUI.flyout(
+      e.currentTarget,
+      '<div class="wui-body-strong" style="margin-bottom:6px">快速设置</div>' +
+        '<div class="wui-caption" style="margin-bottom:12px">浮出层支持任意 HTML 内容。</div>' +
+        '<div class="wui-row"><wui-button size="sm" variant="accent">应用</wui-button><wui-button size="sm">取消</wui-button></div>'
+    );
+  });
+  $("#fly-menu").addEventListener("click", (e) => {
+    WinUI.showMenu(
+      e.currentTarget,
+      [
+        { label: "打开", icon: "folder", accel: "Ctrl+O" },
+        { label: "在新窗口中打开", icon: "external" },
+        { separator: true },
+        { label: "重命名", icon: "edit", accel: "F2" },
+        { label: "复制链接", icon: "link" },
+        { separator: true },
+        { label: "删除", icon: "delete", disabled: false },
+      ],
+      { onSelect: (item) => status(dlgStatus, "菜单选择：" + item.label, "informational") }
+    );
+  });
+  $("#fly-context").addEventListener("click", (e) => {
+    WinUI.showMenu(
+      e.currentTarget,
+      [
+        { label: "剪切", icon: "edit", accel: "Ctrl+X" },
+        { label: "复制", icon: "copy", accel: "Ctrl+C" },
+        { label: "粘贴", icon: "document", accel: "Ctrl+V" },
+      ],
+      { onSelect: (item) => status(dlgStatus, "菜单选择：" + item.label, "informational") }
+    );
+  });
+  $("#tip-teach").addEventListener("click", (e) => {
+    WinUI.teachingTip(e.currentTarget, {
+      title: "教学模式",
+      body: "TeachingTip 用来引导用户发现新功能，可以指向任意控件。",
+      closeText: "知道了",
+      actionText: "了解更多",
+      onAction: () => status(dlgStatus, "你点击了「了解更多」", "success"),
+    });
+  });
+
+  /* ---------- TabView ---------- */
+  const tabs = $("#tab-demo");
+  if (tabs) {
+    tabs.addEventListener("add", () => {
+      const i = tabs._tabs.length + 1;
+      tabs.addTab(
+        "新建标签 " + i,
+        '<div class="wui-page" style="padding:16px"><div class="wui-body-strong">新建标签 ' +
+          i +
+          '</div><p class="wui-caption" style="margin-top:4px">通过 addTab(header, html) 动态创建。</p></div>'
+      );
+    });
+  }
+
+  /* ---------- XAML ---------- */
+  const editor = $("#xaml-editor");
+  const preview = $("#xaml-preview");
+  const errorBox = $("#xaml-error");
+  function renderXaml() {
+    const res = WinUI.renderXAML(editor.value, preview);
+    errorBox.hidden = res.ok;
+    errorBox.textContent = res.ok ? "" : "解析失败：" + res.error;
+  }
+  if (editor) {
+    editor.value = WinUI.xamlSample;
+    renderXaml();
+    editor.addEventListener("input", WinUI.util.debounce(renderXaml, 350));
+    $("#xaml-run").addEventListener("click", renderXaml);
+    $("#xaml-reset").addEventListener("click", () => {
+      editor.value = WinUI.xamlSample;
+      renderXaml();
+    });
+  }
+
+  /* ---------- 设置 ---------- */
+  const settingsTheme = $("#settings-theme");
+  if (settingsTheme) {
+    settingsTheme.addEventListener("change", (e) => {
+      const map = ["light", "dark", "system"];
+      WinUI.setTheme(map[e.detail.index] || "system");
+    });
+  }
+  $("#settings-motion").addEventListener("change", (e) => {
+    const on = e.detail.checked;
+    document.documentElement.style.setProperty("--wui-dur-fast", on ? "167ms" : "0ms");
+    document.documentElement.style.setProperty("--wui-dur-normal", on ? "250ms" : "0ms");
+    document.documentElement.style.setProperty("--wui-dur-slow", on ? "333ms" : "0ms");
+  });
+
+  function paintTokens() {
+    const el = $("#token-readout");
+    if (!el) return;
+    const cs = getComputedStyle(document.documentElement);
+    const keys = [
+      "--wui-accent",
+      "--wui-text-primary",
+      "--wui-bg-base",
+      "--wui-card-bg",
+      "--wui-control-fill",
+      "--wui-stroke-input",
+      "--wui-radius-control",
+      "--wui-dur-normal",
+    ];
+    el.textContent = keys
+      .map((k) => k + ": " + cs.getPropertyValue(k).trim())
+      .join("\n");
+  }
+  WinUI.theme.onChange(paintTokens);
+  WinUI.accent.onChange(paintTokens);
+
+  /* ---------- 初始化 ---------- */
+  paintTheme();
+  paintAccents();
+  paintTokens();
+
+  const params = new URLSearchParams(location.search);
+  const page = params.get("page");
+  if (page) goto(page);
+  /* 深链接：?theme=light|dark|high-contrast */
+  const qTheme = params.get("theme");
+  if (qTheme && ["light", "dark", "high-contrast"].indexOf(qTheme) >= 0) WinUI.setTheme(qTheme);
+
+  console.log("%cWinUI 3 for the Web", "color:#0078d4;font-weight:600", WinUI.version);
+})();
+</script>
+</body>
+</html>

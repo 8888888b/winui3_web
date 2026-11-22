@@ -1,0 +1,293 @@
+/*!
+ * WinUI 3 for the Web — Design Tokens
+ * ------------------------------------------------------------------
+ * 颜色、字体、圆角、动效、高程（Elevation）令牌。
+ * 数值对齐 Windows 11 / WinUI 3 Fluent Design。
+ * 浅色 = :root / [data-theme="light"]，深色 = [data-theme="dark"]。
+ * 强调色由 JS 写入 --wui-accent 系列（见 core.js）。
+ * ------------------------------------------------------------------
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ---------- 字体 ---------- */
+  --wui-font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system,
+    "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+  --wui-font-display: "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI",
+    system-ui, -apple-system, "Microsoft YaHei UI", "PingFang SC", sans-serif;
+  --wui-font-mono: "Cascadia Code", "Cascadia Mono", "Consolas", ui-monospace, monospace;
+  --wui-font-icon: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+
+  /* ---------- 字号 / 行高（WinUI type ramp） ---------- */
+  --wui-text-caption: 12px;
+  --wui-text-caption-lh: 16px;
+  --wui-text-body: 14px;
+  --wui-text-body-lh: 20px;
+  --wui-text-body-large: 18px;
+  --wui-text-body-large-lh: 24px;
+  --wui-text-subtitle: 20px;
+  --wui-text-subtitle-lh: 28px;
+  --wui-text-title: 28px;
+  --wui-text-title-lh: 36px;
+  --wui-text-title-large: 40px;
+  --wui-text-title-large-lh: 52px;
+  --wui-text-display: 68px;
+  --wui-text-display-lh: 92px;
+
+  --wui-weight-regular: 400;
+  --wui-weight-semibold: 600;
+  --wui-weight-bold: 700;
+
+  /* ---------- 圆角 ---------- */
+  --wui-radius-control: 4px;
+  --wui-radius-overlay: 8px;
+  --wui-radius-window: 8px;
+  --wui-radius-card: 4px;
+  --wui-radius-full: 9999px;
+
+  /* ---------- 动效 ---------- */
+  --wui-dur-fast: 167ms;
+  --wui-dur-normal: 250ms;
+  --wui-dur-slow: 333ms;
+  --wui-ease-standard: cubic-bezier(0, 0, 0, 1); /* fast-out slow-in */
+  --wui-ease-decel: cubic-bezier(0.1, 0.9, 0.2, 1);
+  --wui-ease-accel: cubic-bezier(0.7, 0, 1, 1);
+  --wui-ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---------- 强调色（默认 Windows 蓝，JS 可覆盖） ---------- */
+  --wui-accent: #005fb8;
+  --wui-accent-hover: #1a6fc4;
+  --wui-accent-pressed: #004c94;
+  --wui-accent-disabled: rgba(0, 0, 0, 0.22);
+  --wui-accent-text: #ffffff;
+  --wui-accent-tint: rgba(0, 95, 184, 0.08);
+  --wui-accent-tint-strong: rgba(0, 95, 184, 0.16);
+  /* 焦点框 */
+  --wui-focus-outer: rgba(0, 0, 0, 0.9);
+  --wui-focus-inner: #ffffff;
+
+  /* ---------- 表面 / 填充 ---------- */
+  --wui-bg-base: #f3f3f3;
+  --wui-bg-alt: #eeeeee;
+  --wui-bg-tertiary: #f9f9f9;
+  --wui-bg-quarternary: #ffffff;
+  --wui-layer: rgba(255, 255, 255, 0.5);
+  --wui-layer-alt: #ffffff;
+
+  --wui-control-fill: rgba(255, 255, 255, 0.7);
+  --wui-control-fill-secondary: rgba(249, 249, 249, 0.5);
+  --wui-control-fill-tertiary: rgba(249, 249, 249, 0.3);
+  --wui-control-fill-disabled: rgba(249, 249, 249, 0.3);
+  --wui-control-fill-input-active: #ffffff;
+  --wui-control-fill-hover: rgba(249, 249, 249, 0.5);
+  --wui-control-fill-pressed: rgba(249, 249, 249, 0.3);
+
+  --wui-card-bg: rgba(255, 255, 255, 0.7);
+  --wui-card-bg-secondary: rgba(246, 246, 246, 0.5);
+  --wui-card-stroke: rgba(0, 0, 0, 0.0578);
+  --wui-card-stroke-solid: #ebebeb;
+
+  /* ---------- 描边 ---------- */
+  --wui-stroke: rgba(0, 0, 0, 0.0578);
+  --wui-stroke-secondary: rgba(0, 0, 0, 0.1622);
+  --wui-stroke-input: rgba(0, 0, 0, 0.0924);
+  --wui-stroke-strong: rgba(0, 0, 0, 0.4458);
+  --wui-stroke-on-accent: rgba(255, 255, 255, 0.08);
+  --wui-divider: rgba(0, 0, 0, 0.0803);
+
+  /* ---------- 文本 ---------- */
+  --wui-text-primary: rgba(0, 0, 0, 0.8956);
+  --wui-text-secondary: rgba(0, 0, 0, 0.6063);
+  --wui-text-tertiary: rgba(0, 0, 0, 0.4458);
+  --wui-text-disabled: rgba(0, 0, 0, 0.3614);
+  --wui-text-on-accent: #ffffff;
+  --wui-text-on-accent-secondary: rgba(255, 255, 255, 0.7);
+
+  /* ---------- 语义色 ---------- */
+  --wui-success: #0f7b0f;
+  --wui-success-bg: #f1f8f2;
+  --wui-success-stroke: rgba(15, 123, 15, 0.2);
+  --wui-caution: #9d5d00;
+  --wui-caution-bg: #fff9f0;
+  --wui-caution-stroke: rgba(157, 93, 0, 0.2);
+  --wui-critical: #c42b1c;
+  --wui-critical-bg: #fdf3f4;
+  --wui-critical-stroke: rgba(196, 43, 28, 0.2);
+  --wui-info: #005fb8;
+  --wui-info-bg: #f2f7fd;
+  --wui-info-stroke: rgba(0, 95, 184, 0.2);
+  --wui-close-hover: #c42b1c;
+
+  /* ---------- 高程 ---------- */
+  --wui-shadow-2: 0 1px 2px rgba(0, 0, 0, 0.14);
+  --wui-shadow-4: 0 2px 4px rgba(0, 0, 0, 0.14);
+  --wui-shadow-8: 0 4px 8px rgba(0, 0, 0, 0.14);
+  --wui-shadow-16: 0 8px 16px rgba(0, 0, 0, 0.14);
+  --wui-shadow-28: 0 14px 28px rgba(0, 0, 0, 0.24);
+  --wui-shadow-64: 0 32px 64px rgba(0, 0, 0, 0.24);
+
+  /* ---------- 控件尺寸 ---------- */
+  --wui-control-h: 32px;
+  --wui-control-h-sm: 24px;
+  --wui-control-h-lg: 40px;
+  --wui-pad-x: 12px;
+
+  /* ---------- 标题栏 ---------- */
+  --wui-titlebar-h: 32px;
+  --wui-caption-w: 46px;
+
+  /* Mica 基底 */
+  --wui-mica-tint: rgba(243, 243, 243, 0.86);
+  --wui-mica-tint-alt: rgba(238, 238, 238, 0.9);
+  --wui-mica-a: rgba(120, 170, 255, 0.22);
+  --wui-mica-b: rgba(255, 190, 140, 0.16);
+  --wui-mica-c: rgba(170, 150, 255, 0.14);
+}
+
+/* ==================================================================
+ * 深色主题
+ * ================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --wui-accent: #60cdff;
+  --wui-accent-hover: #7ad6ff;
+  --wui-accent-pressed: #4db8e6;
+  --wui-accent-disabled: rgba(255, 255, 255, 0.16);
+  --wui-accent-text: #000000;
+  --wui-accent-tint: rgba(96, 205, 255, 0.12);
+  --wui-accent-tint-strong: rgba(96, 205, 255, 0.2);
+  --wui-focus-outer: rgba(255, 255, 255, 0.9);
+  --wui-focus-inner: #000000;
+
+  --wui-bg-base: #202020;
+  --wui-bg-alt: #1c1c1c;
+  --wui-bg-tertiary: #282828;
+  --wui-bg-quarternary: #2c2c2c;
+  --wui-layer: rgba(58, 58, 58, 0.3);
+  --wui-layer-alt: rgba(255, 255, 255, 0.05);
+
+  --wui-control-fill: rgba(255, 255, 255, 0.0605);
+  --wui-control-fill-secondary: rgba(255, 255, 255, 0.0837);
+  --wui-control-fill-tertiary: rgba(255, 255, 255, 0.0326);
+  --wui-control-fill-disabled: rgba(255, 255, 255, 0.0423);
+  --wui-control-fill-input-active: rgba(30, 30, 30, 1);
+  --wui-control-fill-hover: rgba(255, 255, 255, 0.0837);
+  --wui-control-fill-pressed: rgba(255, 255, 255, 0.0326);
+
+  --wui-card-bg: rgba(255, 255, 255, 0.0512);
+  --wui-card-bg-secondary: rgba(255, 255, 255, 0.0326);
+  --wui-card-stroke: rgba(255, 255, 255, 0.0698);
+  --wui-card-stroke-solid: #333333;
+
+  --wui-stroke: rgba(255, 255, 255, 0.0698);
+  --wui-stroke-secondary: rgba(255, 255, 255, 0.093);
+  --wui-stroke-input: rgba(255, 255, 255, 0.11);
+  --wui-stroke-strong: rgba(255, 255, 255, 0.5442);
+  --wui-stroke-on-accent: rgba(0, 0, 0, 0.08);
+  --wui-divider: rgba(255, 255, 255, 0.0837);
+
+  --wui-text-primary: #ffffff;
+  --wui-text-secondary: rgba(255, 255, 255, 0.786);
+  --wui-text-tertiary: rgba(255, 255, 255, 0.5442);
+  --wui-text-disabled: rgba(255, 255, 255, 0.3628);
+  --wui-text-on-accent: #000000;
+  --wui-text-on-accent-secondary: rgba(0, 0, 0, 0.5);
+
+  --wui-success: #6ccb5f;
+  --wui-success-bg: rgba(108, 203, 95, 0.1);
+  --wui-success-stroke: rgba(108, 203, 95, 0.25);
+  --wui-caution: #fce100;
+  --wui-caution-bg: rgba(252, 225, 0, 0.1);
+  --wui-caution-stroke: rgba(252, 225, 0, 0.22);
+  --wui-critical: #ff99a4;
+  --wui-critical-bg: rgba(255, 153, 164, 0.1);
+  --wui-critical-stroke: rgba(255, 153, 164, 0.22);
+  --wui-info: #60cdff;
+  --wui-info-bg: rgba(96, 205, 255, 0.1);
+  --wui-info-stroke: rgba(96, 205, 255, 0.22);
+  --wui-close-hover: #c42b1c;
+
+  --wui-shadow-2: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --wui-shadow-4: 0 2px 4px rgba(0, 0, 0, 0.28);
+  --wui-shadow-8: 0 4px 8px rgba(0, 0, 0, 0.28);
+  --wui-shadow-16: 0 8px 16px rgba(0, 0, 0, 0.36);
+  --wui-shadow-28: 0 14px 28px rgba(0, 0, 0, 0.44);
+  --wui-shadow-64: 0 32px 64px rgba(0, 0, 0, 0.56);
+
+  --wui-mica-tint: rgba(32, 32, 32, 0.86);
+  --wui-mica-tint-alt: rgba(28, 28, 28, 0.9);
+  --wui-mica-a: rgba(70, 120, 190, 0.26);
+  --wui-mica-b: rgba(160, 90, 60, 0.2);
+  --wui-mica-c: rgba(110, 70, 170, 0.22);
+}
+
+/* ==================================================================
+ * 高对比度
+ * ================================================================== */
+[data-theme="high-contrast"] {
+  color-scheme: dark;
+  --wui-accent: #1aebff;
+  --wui-accent-hover: #55f2ff;
+  --wui-accent-pressed: #00c5d6;
+  --wui-accent-text: #000000;
+  --wui-accent-tint: rgba(26, 235, 255, 0.14);
+  --wui-accent-tint-strong: rgba(26, 235, 255, 0.24);
+  --wui-focus-outer: #ffffff;
+  --wui-focus-inner: #000000;
+
+  --wui-bg-base: #000000;
+  --wui-bg-alt: #000000;
+  --wui-bg-tertiary: #000000;
+  --wui-bg-quarternary: #000000;
+  --wui-layer: #000000;
+  --wui-layer-alt: #000000;
+
+  --wui-control-fill: #000000;
+  --wui-control-fill-secondary: #000000;
+  --wui-control-fill-tertiary: #000000;
+  --wui-control-fill-disabled: #000000;
+  --wui-control-fill-input-active: #000000;
+  --wui-control-fill-hover: #1a1a1a;
+  --wui-control-fill-pressed: #262626;
+
+  --wui-card-bg: #000000;
+  --wui-card-bg-secondary: #000000;
+  --wui-card-stroke: #ffffff;
+  --wui-card-stroke-solid: #ffffff;
+
+  --wui-stroke: #ffffff;
+  --wui-stroke-secondary: #ffffff;
+  --wui-stroke-input: #ffffff;
+  --wui-stroke-strong: #ffffff;
+  --wui-divider: #ffffff;
+
+  --wui-text-primary: #ffffff;
+  --wui-text-secondary: #ffffff;
+  --wui-text-tertiary: #ffffff;
+  --wui-text-disabled: #9e9e9e;
+  --wui-text-on-accent: #000000;
+
+  --wui-success-bg: #000000;
+  --wui-caution-bg: #000000;
+  --wui-critical-bg: #000000;
+  --wui-info-bg: #000000;
+  --wui-success: #55ff55;
+  --wui-caution: #ffff55;
+  --wui-critical: #ff5555;
+  --wui-info: #55ffff;
+
+  --wui-shadow-2: none;
+  --wui-shadow-4: none;
+  --wui-shadow-8: none;
+  --wui-shadow-16: none;
+  --wui-shadow-28: none;
+  --wui-shadow-64: none;
+
+  --wui-mica-tint: #000000;
+  --wui-mica-tint-alt: #000000;
+  --wui-mica-a: transparent;
+  --wui-mica-b: transparent;
+  --wui-mica-c: transparent;
+}
