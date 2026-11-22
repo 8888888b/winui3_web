@@ -131,6 +131,16 @@
     gap: 12px;
     margin: 20px 0 8px;
   }
+  .demo-repo-link {
+    display: inline-block;
+    margin-top: 2px;
+    color: var(--wui-accent);
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .demo-repo-link:hover {
+    text-decoration: underline;
+  }
   .demo-kpi {
     padding: 14px 16px;
     border: 1px solid var(--wui-card-stroke);
@@ -1162,6 +1172,7 @@ Width="220"          → width: 220px</pre>
               <div class="wui-settings-card__body">
                 <div class="wui-settings-card__title">关于 WinUI 3 for the Web</div>
                 <div class="wui-settings-card__desc">版本 1.0.0 · MIT License · 无第三方依赖</div>
+                <a class="wui-settings-card__desc demo-repo-link" id="settings-repo-link" href="https://github.com/8888888b/winui3_web" target="_blank" rel="noopener">github.com/8888888b/winui3_web</a>
               </div>
               <div class="wui-settings-card__action">
                 <wui-button size="sm" icon="external" id="settings-repo">GitHub</wui-button>
